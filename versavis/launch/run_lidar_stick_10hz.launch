@@ -1,0 +1,225 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!-- camera name prefix -->
+  <arg name="camera_name"             default="BFS" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Determine this using rosrun pointgrey_camera_driver list_cameras.
+       If not specified, defaults to first camera found. -->
+  <arg name="cam0_serial" default="18285908" />
+  <arg name="cam1_serial" default="18286011" />
+  <arg name="calibrated" default="1" />
+  <arg name="node_start_delay_cam0" default="10.0" />
+  <arg name="node_start_delay_cam1" default="15.0" />
+  <!-- camera nodelet system -->
+
+    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
+          args="manager"
+          output="screen"
+          required="true" >
+       <param name="num_worker_threads" value="4" />
+    </node>
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_0" >
+    <!-- nodelet manager -->
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+          args="load spinnaker_camera_driver/SpinnakerCameraNodelet /$(arg camera_manager)" 
+          launch-prefix="bash -c 'sleep $(arg node_start_delay_cam0); $0 $@'" >
+
+      <!-- The following params will be included from a seperate config file soon, this is just for a quick test -->
+      <param name="frame_id" value="cam0" />
+      <param name="serial" value="$(arg cam0_serial)" />
+      <param name="acquisition_frame_rate_enable" value="false" />
+      <param name="image_format_color_coding" value="BGR8" />
+
+      <!-- Trigger related config -->
+      <param name="acquisition_mode" value="Continuous" />
+      <param name="trigger_source" value="Line0" /> <!-- Pin 2 -->
+      <param name="enable_trigger" value="On" />
+      <param name="trigger_activation_mode" value="RisingEdge" />
+
+      <!-- Exposure related config -->
+      <param name="exposure_mode" value="Timed" />
+      <param name="exposure_auto" value="Off" />
+      <!-- in microseconds -->
+      <!--
+      <param name="exposure_time" value="1500" /> 
+      -->
+      <param name="exposure_auto" value="Continuous" />
+
+      <param name="line_selector" value="Line2" />
+      <param name="line_mode" value="Output" />
+      <param name="line_source" value="ExposureActive" />
+      <param name="line_inverter" value="false"/>
+      <param name="auto_exposure_time_upper_limit" value="1100" />
+      <param name="auto_exposure_time_lower_limit" value="100" />
+
+
+      <!-- Analog related config -->
+      <!-- <param name="auto_gain" value="Off" />
+      <param name="gain" value="5" /> -->
+      <param name="auto_gain" value="Continuous" />
+      <param name="auto_white_balance" value="Continuous" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
+	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+      <param name="img_sub_topic" type="string" value="/$(arg camera_name)_$(arg camera_type)_0/image_numbered" />
+      <param name="img_pub_topic" type="string" value="/VersaVIS/cam0/image_raw" />
+      <param name="img_time_sub_topic" type="string" value="/VersaVIS/cam0/img_time" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+  </group>
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_1" >
+    <!-- nodelet manager -->
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+          args="load spinnaker_camera_driver/SpinnakerCameraNodelet /$(arg camera_manager)" 
+	  launch-prefix="bash -c 'sleep $(arg node_start_delay_cam1); $0 $@'">
+
+      <!-- The following params will be included from a seperate config file soon, this is just for a quick test -->
+      <param name="frame_id" value="cam1" />
+      <param name="serial" value="$(arg cam1_serial)" />
+      <param name="acquisition_frame_rate_enable" value="false" />
+
+      <!-- Trigger related config -->
+      <param name="acquisition_mode" value="Continuous" />
+      <param name="trigger_source" value="Line0" /> <!-- Pin 2 -->
+      <param name="enable_trigger" value="On" />
+      <param name="trigger_activation_mode" value="RisingEdge" />
+
+      <!-- Exposure related config -->
+      <param name="exposure_mode" value="Timed" />
+      <!--
+      <param name="exposure_auto" value="Continuous" />
+      -->
+      <param name="exposure_auto" value="Off" />
+      <param name="exposure_time" value="850" />  
+      <!-- in microseconds -->
+      <param name="line_selector" value="Line2" />
+      <param name="line_mode" value="Output" />
+      <param name="line_source" value="ExposureActive" />
+      <param name="line_inverter" value="false"/>
+      <!--
+      <param name="auto_exposure_time_upper_limit" value="1300" />
+      <param name="auto_exposure_time_lower_limit" value="1200" />
+      -->
+
+
+      <!-- Analog related config -->
+      <!-- <param name="auto_gain" value="Off" />
+      <param name="gain" value="5" /> -->
+      <param name="auto_gain" value="Continuous" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam1"
+	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+      <param name="img_sub_topic" type="string" value="/$(arg camera_name)_$(arg camera_type)_1/image_numbered" />
+      <param name="img_pub_topic" type="string" value="/VersaVIS/cam1/image_raw" />
+      <param name="img_time_sub_topic" type="string" value="/VersaVIS/cam1/img_time" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+  </group>
+
+  <group ns="thermal" >
+  <node pkg="thermalgrabber_ros" type="thermalgrabber_ros" name="thermalgrabber_ros" output="screen">
+      <param name="verbose" value="false"/>
+
+      <param name="show_opencv_visualization" value="false"/>
+
+      <param name="publish_16bit" value="true"/>
+      <param name="publish_8bit" value="true"/>
+      <param name="publish_16bit_numbered" value="true"/>
+      <param name="publish_false_color" value="true"/>
+      <param name="publish_degrees_celsius" value="true"/>
+      <param name="enable_t_linear_high_resolution" value="true"/>
+      <param name="enable_t_linear_low_resolution" value="false"/>
+      <param name="enable_ntsc_mode" value="false"/>
+      <param name="ffc_mode" value="1"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam2"
+          args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+      <param name="img_sub_topic" type="string" value="/thermal/thermalgrabber_ros/image_numbered" />
+      <param name="img_pub_topic" type="string" value="/VersaVIS/cam2/image_raw" />
+      <param name="img_time_sub_topic" type="string" value="/VersaVIS/cam2/img_time" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+  </group>
+
+  <!-- Relay publish chameleon3 camera_info topic as versavis. -->
+  <node name="relay0" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_0/camera_info /VersaVIS/cam0/camera_info" required="true" output="screen"/>
+  <node name="relay1" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_1/camera_info /VersaVIS/cam1/camera_info" required="true" output="screen"/>
+
+  <!-- Reset arduino with ros message -->
+  <node pkg="rostopic" type="rostopic" name="resetter"
+    args="pub /versavis/reset std_msgs/Bool false --once" output="screen" respawn="false" />
+
+  <!-- Run arduino link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/arduino-zero _baud:=250000" respawn="true" output="screen" />
+
+  <!-- Recieve IMU message. -->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" respawn="true" output="screen">
+    <!-- ADIS16448AMLZ parameters -->
+    <param name="imu_accelerator_sensitivity"           value="0.000833" />
+    <!-- <param name="imu_gyro_sensitivity"                  value="0.04" /> -->
+    <param name="imu_gyro_sensitivity"                  value="0.01" />
+    <param name="imu_acceleration_covariance"           value="0.043864908" /> <!-- no idea where it is from -->
+    <param name="imu_gyro_covariance"                   value="6e-9" /> <!-- no idea where it is from -->
+    <param name="imu_sub_topic"           type="string" value="/VersaVIS/imu_micro"/>
+  </node>
+
+   <!-- lidar. -->
+   <!-- These two parameters need to match, you cannot change the frequency of the lidar without changing the scan duration. -->
+  <arg name="scan_dur_ns" default="100000000" doc="nanoseconds to batch lidar packets before publishing a cloud"/>
+  <arg name="lidar_mode" default="1024x10" doc="Lidar resolution and rotation rate"/>
+
+  <arg name="os1_hostname" default="192.168.5.11" doc="hostname or IP in dotted decimal form of the sensor"/>
+  <arg name="os1_udp_dest" default="192.168.5.5" doc="hostname or IP where the sensor will send data packets"/>
+  <arg name="os1_lidar_port" default="7502" doc="port to which the sensor should send lidar data"/>
+  <arg name="os1_imu_port" default="7503" doc="port to which the sensor should send imu data"/>
+  <arg name="replay" default="false" doc="when true, the node will listen on ~/lidar_packets and ~/imu_packets for data instead of attempting to connect to a sensor"/>
+
+  <group ns="/os1_node">
+    <param name="scan_dur_ns" value="$(arg scan_dur_ns)"/>
+    <param name="os1_hostname" value="$(arg os1_hostname)"/>
+    <param name="os1_udp_dest" value="$(arg os1_udp_dest)"/>
+    <param name="os1_lidar_port" value="$(arg os1_lidar_port)"/>
+    <param name="os1_imu_port" value="$(arg os1_imu_port)"/>
+    <param name="lidar_mode" value="$(arg lidar_mode)"/>
+
+    <param name="replay" value="$(arg replay)"/>
+  </group>
+
+  <node pkg="ouster_ros" type="os1_node" name="os1_node" output="screen" required="true"/>
+
+  <node pkg="ouster_ros" type="os1_cloud_node" name="os1_cloud_node" 
+      output="screen" required="true">
+     <remap from="~/os1_config" to="/os1_node/os1_config"/>
+     <remap from="~/lidar_packets" to="/os1_node/lidar_packets"/>
+     <remap from="~/imu_packets" to="/os1_node/imu_packets"/>
+  </node>
+
+  <node pkg="ouster_ros" name="img_node" type="img_node" output="screen" required="true">
+     <remap from="~/os1_config" to="/os1_node/os1_config"/>
+     <remap from="~/points" to="/os1_cloud_node/points"/>
+   </node>
+
+
+  <!-- Dynamic reconfigure. -->
+  <!-- <node name="reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" /> -->
+
+</launch>

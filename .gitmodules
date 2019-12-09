@@ -1,0 +1,6 @@
+[submodule "dependencies/rosserial"]
+	path = dependencies/rosserial
+	url = git@github.com:ethz-asl/rosserial.git
+[submodule "dependencies/versavis_hw"]
+	path = dependencies/versavis_hw
+	url = git@github.com:ethz-asl/versavis_hw.git

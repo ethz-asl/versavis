@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<launch>
+  	<!-- Run arduino link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/ttyACM0 _baud:=250000" required="true" output="screen" />
+
+  <!-- Recieve IMU message. -->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" required="true" output="screen">
+    <param name="imu_accelerator_sensitivity"           value="0.00025" />
+    <param name="imu_gyro_sensitivity"                  value="0.01" />
+    <param name="imu_acceleration_covariance"           value="0.043864908" />
+    <param name="imu_gyro_covariance"                   value="6e-9" />
+  </node>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam0" args="pub -r 10 /versavis/cam0/init std_msgs/Bool {'data: True'}"/>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam1" args="pub -r 10 /versavis/cam1/init std_msgs/Bool {'data: True'}"/>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam2" args="pub -r 10 /versavis/cam2/init std_msgs/Bool {'data: True'}"/>
+</launch>

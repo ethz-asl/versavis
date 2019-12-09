@@ -1,0 +1,45 @@
+# Set video mode.
+video_mode: format7_mode0     # Full resolution.
+# video_mode: format7_mode2     # Pixel binning.
+
+#see the launch file that overwrites this.
+#frame_rate: 20 
+
+
+# Set shutter speed manually.
+auto_shutter: false
+#auto_shutter: false
+shutter_speed: 0.01 #10ms
+
+# Set exposure manually. 0.0 seems to work good for fairly sunny weather while
+# -0.5 may be advantageous for cloudy conditions.
+#auto_exposure: true
+auto_exposure: false
+exposure: 0.0
+#exposure: 10000.0
+
+# Set gamma (~contrast) and saturation.
+# Change of color coding allows to change gamma and saturation on the camera.
+# format7_color_coding: rgb8
+# gamma: 2.0
+# saturation: 125.0
+format7_color_coding: raw8
+
+# Set white balance manually. 760/740 are usually good values for sunny
+# conditions while 740/720 gives better results in cloudy conditions. 900/655
+# are good for the vicon room.
+# Launch mbzirc_histogram_viewer white_balance_tool.launch to tune the values to
+# a specific condition.
+#auto_white_balance: true
+auto_white_balance: true
+#white_balance_blue: 900
+#white_balance_red: 655
+
+auto_gain: false
+gain: 12.0
+brightness: 4.0
+
+#external_trigger: true
+enable_trigger: true
+trigger_mode: mode0
+trigger_source: gpio0

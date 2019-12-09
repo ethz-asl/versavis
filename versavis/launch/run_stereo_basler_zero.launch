@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!-- camera name prefix -->
+  <arg name="camera_name"             default="bas" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+
+  <arg name="camera_settings_file"    default="$(find versavis)/cfg/basler_acA1920-155uc" />
+  
+  <!-- camera nodelet system -->
+  <group ns="$(arg camera_name)_$(arg camera_type)_0" >
+    <!-- nodelet manager -->
+    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)_0"
+          args="manager"
+          output="screen"
+          required="true" >
+    </node>
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="bas_cam_nodelet_0"
+          args="load ros_basler_camera/RosBaslerCameraNodelet $(arg camera_manager)_0"
+          output="screen" required="true" >
+      <param name="camera_num"                        value="0" />
+      <param name="camera_type"                       value="$(arg camera_type)" />
+      <param name="serial_number"                     value="22559886" /> 
+      <param name="camera_config"                     value="ros" />
+      <param name="synchronization_message"           value="true" />
+      <rosparam command="load" file="$(arg camera_settings_file)_master.yaml" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_0"
+          args="load versavis/VersaVISSynchronizerNodelet $(arg camera_manager)_0"
+          output="screen" required="true">
+      <param name="img_sub_topic"       type="string" value="/$(arg camera_name)_$(arg camera_type)_0/image_numbered" />
+      <param name="img_pub_topic"       type="string" value="/VersaVIS/cam0/image_raw" />
+      <param name="img_time_sub_topic" type="string" value="/VersaVIS/cam0/img_time" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="image_proc_nodelet_0"
+          args="load image_proc/debayer $(arg camera_manager)_0"
+          output="screen" required="true">
+    </node>
+  </group>
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_1" >
+    <!-- nodelet manager -->
+    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)_1"
+          args="manager"
+          output="screen"
+          required="true" >
+    </node> 
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="bas_cam_nodelet_1"
+          args="load ros_basler_camera/RosBaslerCameraNodelet $(arg camera_manager)_1"
+          output="screen" required="true">
+      <param name="camera_num"                        value="1" />
+      <param name="camera_type"                       value="$(arg camera_type)" />
+      <param name="serial_number"                     value="22559890" />
+      <param name="camera_config"                     value="ros" />
+      <param name="synchronization_message"           value="true" />
+      <rosparam command="load" file="$(arg camera_settings_file)_slave.yaml" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_1"
+          args="load versavis/VersaVISSynchronizerNodelet $(arg camera_manager)_1"
+          output="screen" required="true" >
+      <param name="img_sub_topic"       type="string" value="/$(arg camera_name)_$(arg camera_type)_1/image_numbered" />
+      <param name="img_pub_topic"       type="string" value="/VersaVIS/cam1/image_raw" />
+      <param name="img_time_sub_topic" type="string" value="/VersaVIS/cam1/img_time" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="image_proc_nodelet_1"
+          args="load image_proc/debayer $(arg camera_manager)_1"
+          output="screen" required="true">
+    </node>
+  </group>
+
+	<!-- Relay publish basler camera_info topic as versavis. -->
+  <node name="relay0" pkg="topic_tools" type="relay" args="/bas_usb_0/
+    camera_info /versavis/left/camera_info" required="true" output="screen"/>
+  <node name="relay1" pkg="topic_tools" type="relay" args="/bas_usb_1/
+    camera_info /versavis/right/camera_info" required="true" output="screen"/>
+
+  <!--- Visualize.   
+  <node name="image0_view" pkg="image_view" type="image_view"
+    args="image:=/bas_usb_0/image_slow" respawn="true" output="screen"/>
+  <node name="image1_view" pkg="image_view" type="image_view" 
+    args="image:=/bas_usb_1/image_slow" respawn="true" output="screen"/>
+-->
+
+	<!-- Run arduino link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/arduino-zero _baud:=250000" required="true" output="screen" />
+
+  <!-- Recieve IMU message. -->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" required="true" output="screen">
+    <param name="imu_accelerator_sensitivity"           value="0.00025" />
+    <param name="imu_gyro_sensitivity"                  value="0.01" />
+    <param name="imu_acceleration_covariance"           value="0.043864908" />
+    <param name="imu_gyro_covariance"                   value="6e-9" />
+    <param name="imu_sub_topic"           type="string" value="/VersaVIS/imu_micro"/>
+  </node>
+
+  <!-- Dynamic reconfigure. -->
+  <!--<node name="reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" />-->
+</launch>

@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<!-- Forward camera serial. camera_forward_id-->
+<arg name="camera_forward_id"       default="25002526"/>
+<!-- Upward camera serial. camera_upwared_id-->
+<arg name="camera_upward_id"        default="25002519"/>
+<!-- Camera name prefix. -->
+<arg name="camera_name_prefix"      default="mv" />
+<!-- Camera name forward. -->
+<arg name="camera_name_forward"      default="forward" />
+<!-- Camera name upward. -->
+<arg name="camera_name_upward"      default="upward" />
+<!-- Camera manager. -->
+<arg name="camera_manager"          default="camera_manager" />
+
+<!-- Secondary, upward facing camera. -->
+<group ns="/flex_vi/$(arg camera_name_upward)" >
+  <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
+        args="manager"
+        output="screen"
+        required="true" >
+    <param name="num_worker_threads" value="1" />
+  </node>
+
+  <include file="$(find bluefox2)/launch/single_nodelet.launch">
+    <arg name="device" value="$(arg camera_upward_id)" />
+    <arg name="aec" value="1" />
+    <arg name="ctm" value="3" />
+    <arg name="expose_us" value="10000" />
+    <arg name="agc" value="1" />
+    <arg name="gain_db" value="0" />
+    <arg name="expose_lower_limit_us" value="0"/>
+    <arg name="expose_upper_limit_us" value="18000"/>
+    <arg name="plugin" value="true"/>
+    <arg name="camera_name" value="$(arg camera_name_prefix)_$(arg camera_upward_id)"/>
+  </include>
+
+  <node pkg="nodelet" type="nodelet" name="compile_nodelet"
+        args="load versavis/VersaVISSynchronizerNodelet $(arg camera_manager)"
+        output="screen"
+        required="true">
+    <param name="img_sub_topic" type="string" 
+      value="/flex_vi/$(arg camera_name_upward)/$(arg camera_name_prefix)_$(arg camera_upward_id)/image_raw_numbered" />
+    <param name="img_pub_topic" type="string" value="/flex_vi/$(arg camera_name_upward)/$(arg camera_name_prefix)_$(arg camera_upward_id)/image_raw" />
+    <param name="img_time_sub_topic" type="string" value="/flex_vi/img_time_cam1" />
+    <param name="initialized_pub_topic" type="string" value="/flex_vi/init" />
+    <param name="frame_rate" value="20" />
+    <param name="min_readout_time" value="0.002" />
+    <param name="max_readout_time" value="0.018" />
+  </node>
+</group>
+
+<!-- Main, forward facing camera. Exposure time used for midframe time sync. -->
+<group ns="/flex_vi/$(arg camera_name_forward)" >
+  <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
+        args="manager"
+        output="screen"
+        required="true" >
+    <param name="num_worker_threads" value="1" />
+  </node>
+
+  <include file="$(find bluefox2)/launch/single_nodelet.launch">
+    <arg name="device" value="$(arg camera_forward_id)" />
+    <arg name="aec" value="1" />
+    <arg name="ctm" value="3" />
+    <arg name="expose_us" value="10000" />
+    <arg name="agc" value="1" />
+    <arg name="gain_db" value="0" /> <!--6-->
+    <arg name="expose_lower_limit_us" value="0"/>
+    <arg name="expose_upper_limit_us" value="18000"/>
+    <arg name="plugin" value="true"/>
+    <arg name="camera_name" value="$(arg camera_name_prefix)_$(arg camera_forward_id)"/>
+  </include>
+
+  <node pkg="nodelet" type="nodelet" name="compile_nodelet"
+        args="load versavis/VersaVISSynchronizerNodelet $(arg camera_manager)"
+        output="screen"
+        required="true">
+    <param name="img_sub_topic" type="string" 
+      value="/flex_vi/$(arg camera_name_forward)/$(arg camera_name_prefix)_$(arg camera_forward_id)/image_raw_numbered" />
+    <param name="img_pub_topic" type="string" value="/flex_vi/$(arg camera_name_forward)/$(arg camera_name_prefix)_$(arg camera_forward_id)/image_raw" />
+    <param name="img_time_sub_topic" type="string" value="/flex_vi/img_time_cam0" />
+    <param name="initialized_pub_topic" type="string" value="/flex_vi/init" />
+    <param name="frame_rate" value="20" />
+    <param name="min_readout_time" value="0.002" />
+    <param name="max_readout_time" value="0.018" />
+  </node>
+</group>
+
+<!-- Run arduino link. -->
+<node name="vi_sensor_rosserial_python" pkg="rosserial_python" type="serial_node.py"
+  args="_port:=/dev/ttyACM0 _baud:=2000000" respawn="true" output="screen" >
+</node>
+
+<!-- Recieve IMU message. -->
+<node name="versavis_imu_receiver" pkg="versavis"
+    type="versavis_imu_receiver" required="true" output="screen">
+  <param name="imu_sub_topic" type="string" value="/flex_vi/imu_micro" />
+  <param name="imu_pub_topic" type="string" value="/flex_vi/imu" />
+  <param name="imu_accelerator_sensitivity" value="0.00025" />
+  <param name="imu_gyro_sensitivity" value="0.005" />
+  <param name="imu_acceleration_covariance" value="0.043864908" />
+  <param name="imu_gyro_covariance" value="6e-9" />
+</node>
+
+</launch>

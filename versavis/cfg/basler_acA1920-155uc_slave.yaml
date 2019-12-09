@@ -1,0 +1,17 @@
+# Config file for slave
+
+ExposureAuto: "Off"
+ExposureMode: "TriggerWidth" # For some random reason, TriggerWidth segfaults here...
+ExposureTime: 1000.0
+AcquisitionFrameRateEnable: "0"
+AutoExposureTimeLowerLimit: 300.0
+AutoExposureTimeUpperLimit: 19000.0
+AutoTargetBrightness: 0.33
+GainAuto: "Continuous"
+BalanceWhiteAuto: "Continuous"
+TriggerMode: "On"
+TriggerSource: "Line1"
+LineSelector: "Line4"
+LineMode: "Output"
+LineSource: "ExposureActive"
+LineInverter: True

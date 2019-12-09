@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>versavis</name>
+  <version>0.0.3</version>
+  <description>The versavis package</description>
+  <maintainer email="ftschopp@ethz.ch">Florian Tschopp</maintainer>
+  <license>closed</license>
+  <url type="website">https://github.com/ethz-asl/versavis</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>image_transport</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>nodelet</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>rosserial_client</depend>
+  <depend>rosserial_arduino</depend>
+  <depend>rosserial_python</depend>
+  <depend>image_numbered_msgs</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugin.xml" />
+  </export>
+</package>

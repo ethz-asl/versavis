@@ -1,0 +1,9 @@
+<library path="lib/libversavis_nodelet">
+  <class name="versavis/VersaVISSynchronizerNodelet" 
+    type="versavis::VersaVISSynchronizerNodelet"
+    base_class_type="nodelet::Nodelet">
+  <description>
+  This is the VersaVIS synchronizer nodelet.
+  </description>
+  </class>
+</library>
