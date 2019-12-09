@@ -184,8 +184,16 @@ void TCC1_Handler() { // Called by cam1_timer for camera 1 trigger.
   cam1.triggerMeasurement();
 }
 
-void TC3_Handler() { // Called by cam2_timer for camera 2 trigger.
-  cam2.triggerMeasurement();
+
+void TC3_Handler() {    // Called by cam2_timer for camera 2 trigger.
+ // cam2.triggerMeasurement();
+
+  if (timer_cam2.checkOverflow()) {
+    digitalWrite(4, HIGH);
+    delayMicroseconds(1);
+    digitalWrite(4, LOW);
+    timer_cam2.resetOverflow();
+  }
 }
 
 void TC5_Handler() { // Called by imu_timer for imu trigger.

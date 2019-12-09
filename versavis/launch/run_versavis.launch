@@ -47,9 +47,9 @@
 
       <!-- Exposure related config -->
       <param name="exposure_mode" value="Timed" />
-      <param name="exposure_auto" value="Continuous" />
-      <!-- <param name="exposure_auto" value="Off" />
-      <param name="exposure_time" value="6000" /> --> <!-- in microseconds -->
+        <!-- <param name="exposure_auto" value="Continuous" /> -->
+      <param name="exposure_auto" value="Off" />
+      <param name="exposure_time" value="1000" /> <!-- in microseconds -->
       <param name="line_selector" value="Line2" />
       <param name="line_mode" value="Output" />
       <param name="line_source" value="ExposureActive" />
@@ -59,9 +59,9 @@
 
 
       <!-- Analog related config -->
-      <!-- <param name="auto_gain" value="Off" />
-      <param name="gain" value="5" /> -->
-      <param name="auto_gain" value="Continuous" />
+      <param name="auto_gain" value="Off" />
+      <param name="gain" value="0" /> 
+        <!--  param name="auto_gain" value="Continuous" /> -->
       <param name="auto_white_balance" value="Continuous" />
     </node>
     <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
@@ -94,9 +94,9 @@
 
       <!-- Exposure related config -->
       <param name="exposure_mode" value="Timed" />
-      <param name="exposure_auto" value="Continuous" />
-      <!-- <param name="exposure_auto" value="Off" />
-      <param name="exposure_time" value="6000" /> --> <!-- in microseconds -->
+        <!-- <param name="exposure_auto" value="Continuous" /> -->
+      <param name="exposure_auto" value="Off" />
+      <param name="exposure_time" value="1000" /> <!-- in microseconds -->
       <param name="line_selector" value="Line2" />
       <param name="line_mode" value="Output" />
       <param name="line_source" value="ExposureActive" />
@@ -106,10 +106,10 @@
 
 
       <!-- Analog related config -->
-      <!-- <param name="auto_gain" value="Off" />
-      <param name="gain" value="5" /> -->
-      <param name="auto_gain" value="Continuous" />
-      <param name="auto_white_balance" value="Continuous" />
+      <param name="auto_gain" value="Off" />
+      <param name="gain" value="5" />
+      <!-- <param name="auto_gain" value="Continuous" />
+      <param name="auto_white_balance" value="Continuous" /> -->
     </node>
     <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam1"
 	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
