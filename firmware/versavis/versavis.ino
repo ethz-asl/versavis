@@ -4,7 +4,7 @@
 #include <math.h>
 #include <ros.h>
 #include <std_msgs/UInt8.h>
-
+#include <std_msgs/Float64.h>
 #include "Arduino.h"
 
 #ifdef USE_ADIS16445
@@ -34,6 +34,17 @@ ros::Subscriber<std_msgs::Bool> reset_sub("/versavis/reset", &resetCb);
 #ifdef ILLUMINATION_MODULE
 ros::Subscriber<std_msgs::UInt8> pwm_sub("/versavis/illumination_pwm", &pwmCb);
 #endif
+
+std_msgs::Float64 residual_msg;
+ros::Publisher residual_pub("/arduino_vi_sync/ekf/residual", &residual_msg);
+std_msgs::Float64 offset_msg;
+ros::Publisher offset_pub("/arduino_vi_sync/ekf/offset", &offset_msg);
+std_msgs::Float64 skew_msg;
+ros::Publisher skew_pub("/arduino_vi_sync/ekf/skew", &skew_msg);
+std_msgs::Float64 inno_offset_msg;
+ros::Publisher inno_offset_pub("/arduino_vi_sync/ekf/inno_offset", &inno_offset_msg);
+std_msgs::Float64 inno_skew_msg;
+ros::Publisher inno_skew_pub("/arduino_vi_sync/ekf/inno_skew", &inno_skew_msg);
 
 /* ----- Timers ----- */
 // In the current setup: TC5 -> IMU, TCC0 -> cam0, TCC1 -> cam1, TC3 -> cam2
@@ -82,19 +93,25 @@ void setup() {
 
   delay(1000);
 
-/* ----- ROS ----- */
-#ifndef DEBUG
-  nh.getHardware()->setBaud(250000);
-  nh.initNode();
-  nh.subscribe(reset_sub);
-#ifdef ILLUMINATION_MODULE
-  nh.subscribe(pwm_sub);
-#endif
-#else
-  while (!SerialUSB) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-#endif
+  /* ----- ROS ----- */
+  #ifndef DEBUG
+    nh.getHardware()->setBaud(250000);
+    nh.initNode();
+    nh.subscribe(reset_sub);
+    #ifdef ILLUMINATION_MODULE
+      nh.subscribe(pwm_sub);
+    #endif
+    nh.advertise(residual_pub);
+    nh.advertise(offset_pub);
+    nh.advertise(skew_pub);
+    nh.advertise(inno_offset_pub);
+    nh.advertise(inno_skew_pub);
+  #else
+    while (!SerialUSB) {
+      ; // wait for serial port to connect. Needed for native USB port only
+    }
+  #endif
+
 
   DEBUG_PRINTLN(F("Main: Start setup."));
 
@@ -171,9 +188,22 @@ void loop() {
   cam2.publish();
   imu.publish();
 
-#ifndef DEBUG
-  nh.spinOnce();
-#endif
+  if (nh.isNewEkfAvailable()) {
+    residual_msg.data = nh.getResidual();
+    residual_pub.publish(&residual_msg);
+    offset_msg.data = nh.getOffset();
+    offset_pub.publish(&offset_msg);
+    skew_msg.data = nh.getSkew();
+    skew_pub.publish(&skew_msg);
+    inno_offset_msg.data = nh.getInnovationOffset();
+    inno_offset_pub.publish(&inno_offset_msg);
+    inno_skew_msg.data = nh.getInnovationSkew();
+    inno_skew_pub.publish(&inno_skew_msg);
+    nh.newEkfIsNotAvailable();
+  } 
+  #ifndef DEBUG
+    nh.spinOnce();
+  #endif
 }
 
 void TCC0_Handler() { // Called by cam0_timer for camera 0 trigger.
