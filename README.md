@@ -8,8 +8,8 @@ An Open Versatile Multi-Camera Visual-Inertial Sensor Suite
 * [PointGrey/Flir](https://github.com/ethz-asl/flir_camera_driver/tree/devel/versavis) tested with Chameleon 3, Blackfly S
 * [CamBoard](https://github.com/ethz-asl/pico_flexx_driver/tree/devel/versavis) tested with CamBoard pico monstar
 
-## Preliminary documentation (WIP)
-[Paper](https://arxiv.org/abs/1912.02469) and [Presentation](https://docs.google.com/presentation/d/1SZYs3M01k65-Rg9b8MOcZT-UuRliV7OSue2i0WA65Tc/edit?usp=sharing)
+## Some documentation
+[Paper](https://arxiv.org/abs/1912.02469) and [Presentation](https://docs.google.com/presentation/d/1Yi71cYtIBGUP5bFDKDFcUF2MjNS_CV3LM7W1_3jNLEs/edit?usp=sharing)
 
 ## Install
 
@@ -17,7 +17,7 @@ An Open Versatile Multi-Camera Visual-Inertial Sensor Suite
 
 ```
 cd ~/catkin_ws/src/
-git clone -b devel/open-source git@github.com:ethz-asl/versavis_private.git --recursive
+git clone -b devel/open-source git@github.com:ethz-asl/versavis.git --recursive
 catkin build versavis
 cd firmware
 ./setup.sh
