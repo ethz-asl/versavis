@@ -62,7 +62,7 @@
 // Activation of a uLanding on UART.
 // #define USE_U_LANDING
 #ifdef USE_U_LANDING
-#define U_LANDING_TOPIC "/versavis/ulanding_micro"
+#define U_LANDING_TOPIC "/versavis/u_landing_micro"
 #define U_LANDING_RATE 20
 #define U_LANDING_UART Serial // Serial or Serial1
 #endif
