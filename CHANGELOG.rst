@@ -1,6 +1,7 @@
 1.1.0 (TBD)
 ------------------
 * Add Lidar Lite sensor
+* Add uLanding sensor
 
 1.0.0 (2019-12-09)
 ------------------
