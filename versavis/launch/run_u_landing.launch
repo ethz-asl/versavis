@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<launch>
+  	<!-- Run arduino link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/ttyACM0 _baud:=250000" required="true" output="screen" />
+
+  <!-- Receiver uLanding message. -->
+  <node name="versavis_u_landing_receiver" pkg="versavis"
+      type="versavis_range_receiver" required="true" output="screen">
+    <param name="range_sub_topic"           value="/versavis/u_landing_micro" />
+    <param name="range_pub_topic"           value="/versavis/u_landing" />
+
+    <!-- Parameters from Aerotenna uLanding Lite specs. -->
+    <!-- https://aerotenna.readme.io/docs/%CE%BClanding-c1-lite -->
+    <param name="frame_id"           value="u_landing" />
+    <param name="radiation_type"     value="2" /> <!-- 2 = MICROWAVE -->
+    <param name="field_of_view"      value="0.5" /> <!-- guessed https://aerotenna.readme.io/docs/qa#section-q7-what-is-the-shape-of-%CE%BClandings-fov-and-what-is-the-footprint-of-%CE%BClanding-on-the-ground -->
+    <param name="min_range"          value="0.35" />
+    <param name="max_range"          value="45.0" />
+    <param name="range_sensitivity"  value="0.01" />
+    <param name="min_signal_strength"  value="0" /> <!-- No minimum signal strength -->
+  </node>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam0" args="pub -r 10 /versavis/cam0/init std_msgs/Bool {'data: True'}"/>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam1" args="pub -r 10 /versavis/cam1/init std_msgs/Bool {'data: True'}"/>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam2" args="pub -r 10 /versavis/cam2/init std_msgs/Bool {'data: True'}"/>
+</launch>

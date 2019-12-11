@@ -27,11 +27,14 @@
 #define CAM1_EXPOSURE_PIN 6
 
 // Camera 2
+#define USE_CAM2
+#ifdef USE_CAM2
 #define CAM2_TOPIC ""
 #define CAM2_RATE 5
 #define CAM2_TYPE trigger_type::NON_INVERTED
 #define CAM2_TRIGGER_PIN 16
 #define CAM2_EXPOSURE_PIN 7
+#endif
 
 /* ----- IMU -----*/
 // Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ and
@@ -53,6 +56,15 @@
 #ifdef ILLUMINATION_MODULE
 #define ILLUMINATION_PWM_PIN 2
 #define ILLUMINATION_PIN 26
+#endif
+
+/* ----- Aerotenna uLanding ----- */
+// Activation of a uLanding on UART.
+// #define USE_U_LANDING
+#ifdef USE_U_LANDING
+#define U_LANDING_TOPIC "/versavis/ulanding_micro"
+#define U_LANDING_RATE 20
+#define U_LANDING_UART Serial // Serial or Serial1
 #endif
 
 /* ----- Garmin LidarLite ----- */
