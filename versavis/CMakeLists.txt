@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   ImuMicro.msg
+  RangeMicro.msg
   TimeNumbered.msg
 )
 
@@ -67,6 +68,12 @@ add_executable(versavis_imu_receiver
 )
 add_dependencies(versavis_imu_receiver ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(versavis_imu_receiver ${catkin_LIBRARIES})
+
+add_executable(versavis_range_receiver
+   src/versavis_range_receiver.cpp
+)
+add_dependencies(versavis_range_receiver ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(versavis_range_receiver ${catkin_LIBRARIES})
 
 ############
 ## EXPORT ##

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<launch>
+  	<!-- Run arduino link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/ttyACM0 _baud:=250000" required="true" output="screen" />
+
+  <!-- Receiver Lidar Lite message. -->
+  <node name="versavis_lidar_lite_receiver" pkg="versavis"
+      type="versavis_range_receiver" required="true" output="screen">
+    <param name="range_sub_topic"           value="/versavis/lidar_lite_micro" />
+    <param name="range_pub_topic"           value="/versavis/lidar_lite" />
+
+    <!-- Parameters from Garmin Lidar Lite v3 specs. -->
+    <!-- https://buy.garmin.com/en-US/US/p/557294#specs -->
+    <param name="frame_id"           value="lidar_lite" />
+    <param name="radiation_type"     value="1" /> <!-- 1 = INFRARED -->
+    <param name="field_of_view"      value="0.008" />
+    <param name="min_range"          value="0.05" />
+    <param name="max_range"          value="40.0" />
+    <param name="range_sensitivity"  value="0.01" />
+    <param name="min_signal_strength"  value="0" /> <!-- No minimum signal strength -->
+  </node>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam0" args="pub -r 10 /versavis/cam0/init std_msgs/Bool {'data: True'}"/>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam1" args="pub -r 10 /versavis/cam1/init std_msgs/Bool {'data: True'}"/>
+
+  <node pkg="rostopic" type="rostopic" name="initializer_cam2" args="pub -r 10 /versavis/cam2/init std_msgs/Bool {'data: True'}"/>
+</launch>

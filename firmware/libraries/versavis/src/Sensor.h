@@ -17,6 +17,7 @@
 #include "Timer.h"
 #include <ros.h>
 #include <versavis/ImuMicro.h>
+#include <versavis/RangeMicro.h>
 #include <versavis/TimeNumbered.h>
 
 enum trigger_type { INVERTED, NON_INVERTED };
@@ -28,6 +29,9 @@ public:
          const trigger_type type = trigger_type::NON_INVERTED);
   Sensor(ros::NodeHandle *nh, const String &topic, const int rate_hz,
          Timer &timer, versavis::ImuMicro &imu_msg,
+         const trigger_type type = trigger_type::NON_INVERTED);
+  Sensor(ros::NodeHandle *nh, const String &topic, const int rate_hz,
+         Timer &timer, versavis::RangeMicro &range_msg,
          const trigger_type type = trigger_type::NON_INVERTED);
   inline virtual void setup(){/* do nothing */};
   inline virtual void begin(){/* do nothing */};
