@@ -31,7 +31,7 @@ sudo adduser <username> dialout
 
 Copy udev rule file to your system:
 ```
-cp firmware/98-versa-vis.rules /etc/udev/rules.d/98-versa-vis.rules
+sudo cp firmware/98-versa-vis.rules /etc/udev/rules.d/98-versa-vis.rules
 ```
 Afterwards, use the following commands to reload the rules
 ```
