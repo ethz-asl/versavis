@@ -19,7 +19,7 @@ An Open Versatile Multi-Camera Visual-Inertial Sensor Suite
 cd ~/catkin_ws/src/
 git clone git@github.com:ethz-asl/versavis.git --recursive
 catkin build versavis
-cd firmware
+cd versavis/firmware
 ./setup.sh
 ```
 
@@ -31,7 +31,7 @@ sudo adduser <username> dialout
 
 Copy udev rule file to your system:
 ```
-cp firmware/98-versa-vis.rules /etc/udev/rules.d/98-versa-vis.rules
+sudo cp firmware/98-versa-vis.rules /etc/udev/rules.d/98-versa-vis.rules
 ```
 Afterwards, use the following commands to reload the rules
 ```
