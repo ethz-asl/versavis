@@ -373,20 +373,26 @@ float ADIS16445::tempScale(int16_t sensorData) {
 // Method to update the sensor data without any validity checks (may result in
 // spikes).
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16445::updateData() { sensor_data_ = sensorReadAll(); }
+bool ADIS16445::updateData() {
+  sensor_data_ = sensorReadAll();
+  return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16445::updateDataRecursive(unsigned int depth) {
+bool ADIS16445::updateDataRecursive(unsigned int depth) {
   sensor_data_ = sensorReadAll();
   // Assuming that 1) temperature changes much slower than IMU sampling rate, 2)
   // all other measurements are correct if TEMP_OUT is correct. It may be
   // necessary to filter outliers out by using moving average filter before
   // publishing IMU topic (i.e., versavis_imu_receiver.cpp)
-  if (sensor_data_[7] != regRead(TEMP_OUT) &&
-      depth < max_recursive_update_depth_) {
+  if (sensor_data_[7] != regRead(TEMP_OUT)) {
+    if (depth > max_recursive_update_depth_) {
+      return false;
+    }
     updateDataRecursive(depth + 1);
   }
+  return true;
 }

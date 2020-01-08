@@ -41,10 +41,10 @@ public:
   void setupPublisher();
 
   // Update data internally with recursion.
-  virtual void updateDataRecursive(const unsigned int depth) = 0;
+  virtual bool updateDataRecursive(const unsigned int depth) = 0;
 
   // Update data internally without recursion.
-  virtual void updateData() = 0;
+  virtual bool updateData() = 0;
 
 protected:
   int16_t *sensor_data_;

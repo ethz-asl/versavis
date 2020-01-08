@@ -340,16 +340,22 @@ float ADIS16460::deltaVelocityScale(int16_t sensorData) {
 // Method to update the sensor data without any validity checks (may result in
 // spikes).
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16460::updateData() { sensor_data_ = burstRead(); }
+bool ADIS16460::updateData() {
+  sensor_data_ = burstRead();
+  return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16460::updateDataRecursive(unsigned int depth) {
+bool ADIS16460::updateDataRecursive(unsigned int depth) {
   sensor_data_ = burstRead();
-  if (sensor_data_[9] != checksum(sensor_data_) &&
-      depth > max_recursive_update_depth_) {
+  if (sensor_data_[9] != checksum(sensor_data_)) {
+    if (depth > max_recursive_update_depth_) {
+      return false;
+    }
     updateDataRecursive(depth + 1);
   }
+  return true;
 }

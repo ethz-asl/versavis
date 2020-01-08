@@ -129,10 +129,10 @@ public:
   float deltaVelocityScale(int16_t sensorData);
 
   // Update data internally with recursion.
-  void updateDataRecursive(unsigned int depth);
+  bool updateDataRecursive(unsigned int depth);
 
   // Update data withoput recursion.
-  void updateData();
+  bool updateData();
 
 private:
   // Variables to store hardware pin assignments

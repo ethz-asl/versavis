@@ -465,16 +465,22 @@ float ADIS16448BMLZ::magnetometerScale(int16_t sensorData) {
 // Method to update the sensor data without any validity checks (may result in
 // spikes).
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16448BMLZ::updateData() { sensor_data_ = sensorReadAllCRC(); }
+bool ADIS16448BMLZ::updateData() {
+  sensor_data_ = sensorReadAllCRC();
+  return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16448BMLZ::updateDataRecursive(const unsigned int depth) {
+bool ADIS16448BMLZ::updateDataRecursive(const unsigned int depth) {
   sensor_data_ = sensorReadAllCRC();
-  if (sensor_data_[12] != checksum(sensor_data_) &&
-      depth < max_recursive_update_depth_) {
+  if (sensor_data_[12] != checksum(sensor_data_)) {
+    if (depth > max_recursive_update_depth_) {
+      return false;
+    }
     updateDataRecursive(depth + 1);
   }
+  return true;
 }

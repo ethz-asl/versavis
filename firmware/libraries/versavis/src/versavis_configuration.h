@@ -14,7 +14,7 @@
 /* ----- Camera configuration ----*/
 // Camera 0
 #define CAM0_TOPIC "/versavis/cam0/"
-#define CAM0_RATE 20
+#define CAM0_RATE 10
 #define CAM0_TYPE trigger_type::NON_INVERTED
 #define CAM0_TRIGGER_PIN 14
 #define CAM0_EXPOSURE_PIN 5
@@ -34,11 +34,11 @@
 #define CAM2_EXPOSURE_PIN 7
 
 /* ----- IMU -----*/
-// Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ and
-// USE_ADIS16460
-#define USE_ADIS16460
+// Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ,
+// USE_ADIS16460 and USE_VN100
+#define USE_VN100
 #define IMU_TOPIC "/versavis/imu_micro"
-#define IMU_RATE 200
+#define IMU_RATE 100
 
 /* ----- Additional triggers ----- */
 // Define whether additional test outputs should be used.
@@ -55,7 +55,7 @@
 #define ILLUMINATION_PIN 26
 #endif
 
-/* ----- Debug prints. ----- */
+/* ----- Debug mode. ----- */
 // Define whether debug mode should be used. This provides output on the
 // standard console but invalidates ROS communication.
 // #define DEBUG
