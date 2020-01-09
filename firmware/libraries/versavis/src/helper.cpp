@@ -8,6 +8,7 @@ void error(const char *string, const int number) {
   noInterrupts();
   DEBUG_PRINT("ERROR: " + String(number));
   while (true) {
-    ;
+    ; // TODO(floriantschopp) Find a better way to stop execution but still be
+      // able to interrupt.
   }
 }
