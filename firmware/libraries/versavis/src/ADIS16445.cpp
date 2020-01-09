@@ -382,7 +382,7 @@ bool ADIS16445::updateData() {
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-bool ADIS16445::updateDataRecursive(unsigned int depth) {
+bool ADIS16445::updateDataRecursive(const unsigned int depth, bool success) {
   sensor_data_ = sensorReadAll();
   // Assuming that 1) temperature changes much slower than IMU sampling rate, 2)
   // all other measurements are correct if TEMP_OUT is correct. It may be
@@ -392,7 +392,12 @@ bool ADIS16445::updateDataRecursive(unsigned int depth) {
     if (depth > max_recursive_update_depth_) {
       return false;
     }
-    updateDataRecursive(depth + 1);
+    DEBUG_PRINTLN(topic_ +
+                  " (ADIS16445.cpp): Failed IMU update detected, recurring " +
+                  (String)(max_recursive_update_depth_ - depth) + " times.");
+    success = updateDataRecursive(depth + 1, success);
+  } else {
+    success = true;
   }
-  return true;
+  return success;
 }

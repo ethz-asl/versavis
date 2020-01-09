@@ -41,7 +41,7 @@ public:
   void setupPublisher();
 
   // Update data internally with recursion.
-  virtual bool updateDataRecursive(const unsigned int depth) = 0;
+  virtual bool updateDataRecursive(const unsigned int depth, bool success) = 0;
 
   // Update data internally without recursion.
   virtual bool updateData() = 0;

@@ -36,7 +36,7 @@
 
 VN100::VN100(ros::NodeHandle *nh, const String &topic, const int rate_hz,
              Timer &timer)
-    : Imu(nh, topic, rate_hz, timer), kImuSyncTimeoutUs(10000) {
+    : Imu(nh, topic, rate_hz, timer), kImuSyncTimeoutUs(4000) {
   imu_accelerator_sensitivity_ = 1.0 / (0.00025 * 9.81);
   imu_gyro_sensitivity_ = 1.0 / (0.05 * M_PI / 180);
 }
@@ -68,17 +68,19 @@ void VN100::setup() {
 int16_t *VN100::readImuData() {
   clearBuffer();
   Serial1.print("$VNBOM,1*XX\r\n");
+  const uint64_t local_tic = micros();
   while (Serial1.available() < 30) {
-    if (micros() - tic_ < kImuSyncTimeoutUs) {
+    if (micros() - local_tic < kImuSyncTimeoutUs / 2) {
       delayMicroseconds(1); // Wait until full message is received.
     } else {
-      DEBUG_PRINTLN(topic_ + " (VN100.cpp): Serial read failed (timeout?).");
+      DEBUG_PRINTLN(topic_ +
+                    " (VN100.cpp): Serial data never available (timeout?).");
       return nullptr;
     }
   }
   size_t bytes = Serial1.readBytes(in_, 30);
   if (bytes != 30) {
-    DEBUG_PRINTLN(topic_ + " (VN100.cpp): Serial read failed (timeout?).");
+    DEBUG_PRINTLN(topic_ + " (VN100.cpp): Not all data read (timeout?).");
     return nullptr;
   }
   if (in_[0] != 0xFA) {
@@ -88,20 +90,20 @@ int16_t *VN100::readImuData() {
   checksum_.b[0] = in_[29];
   checksum_.b[1] = in_[28];
   for (size_t i = 0; i < 4; ++i) {
-    W_x_.b[i] = in_[4 + i];
-    W_y_.b[i] = in_[8 + i];
-    W_z_.b[i] = in_[12 + i];
-    a_x_.b[i] = in_[16 + i];
-    a_y_.b[i] = in_[20 + i];
-    a_z_.b[i] = in_[24 + i];
+    a_x_.b[i] = in_[4 + i];
+    a_y_.b[i] = in_[8 + i];
+    a_z_.b[i] = in_[12 + i];
+    W_x_.b[i] = in_[16 + i];
+    W_y_.b[i] = in_[20 + i];
+    W_z_.b[i] = in_[24 + i];
   }
   static int16_t scaled_sensor_data[7];
-  scaled_sensor_data[1] = W_x_.f / imu_accelerator_sensitivity_;
-  scaled_sensor_data[2] = W_y_.f / imu_accelerator_sensitivity_;
-  scaled_sensor_data[3] = W_z_.f / imu_accelerator_sensitivity_;
-  scaled_sensor_data[4] = a_x_.f / imu_gyro_sensitivity_;
-  scaled_sensor_data[5] = a_y_.f / imu_gyro_sensitivity_;
-  scaled_sensor_data[6] = a_z_.f / imu_gyro_sensitivity_;
+  scaled_sensor_data[1] = W_x_.f * imu_gyro_sensitivity_;
+  scaled_sensor_data[2] = W_y_.f * imu_gyro_sensitivity_;
+  scaled_sensor_data[3] = W_z_.f * imu_gyro_sensitivity_;
+  scaled_sensor_data[4] = a_x_.f * imu_accelerator_sensitivity_;
+  scaled_sensor_data[5] = a_y_.f * imu_accelerator_sensitivity_;
+  scaled_sensor_data[6] = a_z_.f * imu_accelerator_sensitivity_;
   return (scaled_sensor_data); // Return pointer with data
 }
 
@@ -140,8 +142,9 @@ unsigned short VN100::checksum(byte data[], size_t length,
 // Clear Serial buffer for any remaining data.
 ////////////////////////////////////////////////////////////////////////////
 void VN100::clearBuffer() {
+  const uint64_t local_tic = micros();
   while (Serial1.available()) {
-    if (micros() - tic_ < kImuSyncTimeoutUs) {
+    if (micros() - local_tic < kImuSyncTimeoutUs / 3) {
       Serial1.readBytes(in_, Serial1.available());
     } else {
       return;
@@ -166,19 +169,23 @@ bool VN100::updateData() {
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-bool VN100::updateDataRecursive(const unsigned int depth) {
-  tic_ = micros();
+bool VN100::updateDataRecursive(const unsigned int depth, bool success) {
+  if (depth == 0) {
+    tic_ = micros();
+  }
+  Sensor::setTimestampNow();
   sensor_data_ = readImuData();
   if (sensor_data_ == nullptr || checksum_.s != checksum(in_, 28, true)) {
-    if (depth > max_recursive_update_depth_) {
+    if (depth > max_recursive_update_depth_ ||
+        micros() - tic_ > kImuSyncTimeoutUs) {
       return false;
     }
     DEBUG_PRINTLN(topic_ +
                   " (VN100.cpp): Failed IMU update detected, recurring " +
                   (String)(max_recursive_update_depth_ - depth) + " times.");
-    updateDataRecursive(depth + 1);
+    success = updateDataRecursive(depth + 1, success);
+  } else {
+    success = true;
   }
-  DEBUG_PRINT(topic_ + " (VN100.cpp): Update took: ");
-  DEBUG_PRINTDECLN((int)(micros() - tic_));
-  return true;
+  return success;
 }

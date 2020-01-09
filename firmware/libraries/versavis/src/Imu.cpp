@@ -33,12 +33,13 @@ void Imu::publish() {
     DEBUG_PRINTLN((topic_ + " (Imu.cpp): Publish."));
     bool success;
 #ifdef DEBUG
-    success = updateDataRecursive(0u);
+    success = updateDataRecursive(0u, false);
 #else
-    success = updateDataRecursive(0u);
+    success = updateDataRecursive(0u, false);
 #endif
     if (!success) {
       Sensor::newMeasurementIsNotAvailable();
+      DEBUG_PRINTLN((topic_ + " (Imu.cpp): IMU update failed.").c_str());
     } else {
       imu_msg_.time.data = Sensor::getTimestamp();
       if (sensor_data_ == nullptr) {

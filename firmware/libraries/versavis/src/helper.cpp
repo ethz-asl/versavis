@@ -5,8 +5,9 @@ void error(const char *string, const int number) {
   digitalWrite(ILLUMINATION_PIN, LOW); // Disable illumination if its activated.
 #endif
   DEBUG_PRINTLN(string);
+  noInterrupts();
+  DEBUG_PRINT("ERROR: " + String(number));
   while (true) {
-    DEBUG_PRINT("ERROR: ");
-    DEBUG_PRINTDECLN(number);
+    ;
   }
 }
