@@ -129,7 +129,7 @@ public:
   float deltaVelocityScale(int16_t sensorData);
 
   // Update data internally with recursion.
-  bool updateDataRecursive(const unsigned int depth, bool success);
+  bool updateDataIterative();
 
   // Update data withoput recursion.
   bool updateData();

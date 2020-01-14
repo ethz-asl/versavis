@@ -41,14 +41,15 @@ public:
   void setupPublisher();
 
   // Update data internally with recursion.
-  virtual bool updateDataRecursive(const unsigned int depth, bool success) = 0;
+  virtual bool updateDataIterative() = 0;
 
   // Update data internally without recursion.
   virtual bool updateData() = 0;
 
 protected:
   int16_t *sensor_data_;
-  unsigned int max_recursive_update_depth_;
+  const unsigned int kMaxRecursiveUpdateDepth;
+  const uint64_t kImuSyncTimeoutUs;
 
 private:
   versavis::ImuMicro imu_msg_;

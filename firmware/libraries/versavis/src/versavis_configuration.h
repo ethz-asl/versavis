@@ -14,7 +14,7 @@
 /* ----- Camera configuration ----*/
 // Camera 0
 #define CAM0_TOPIC "/versavis/cam0/"
-#define CAM0_RATE 10
+#define CAM0_RATE 20
 #define CAM0_TYPE trigger_type::NON_INVERTED
 #define CAM0_TRIGGER_PIN 14
 #define CAM0_EXPOSURE_PIN 5
@@ -38,7 +38,7 @@
 // USE_ADIS16460 and USE_VN100
 #define USE_VN100
 #define IMU_TOPIC "/versavis/imu_micro"
-#define IMU_RATE 100
+#define IMU_RATE 200
 
 /* ----- Additional triggers ----- */
 // Define whether additional test outputs should be used.

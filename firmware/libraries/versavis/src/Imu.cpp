@@ -5,8 +5,8 @@
 
 Imu::Imu(ros::NodeHandle *nh, const String &topic, const int rate_hz,
          Timer &timer)
-    : Sensor(nh, topic, rate_hz, timer, imu_msg_),
-      max_recursive_update_depth_(10u) {}
+    : Sensor(nh, topic, rate_hz, timer, imu_msg_), kMaxRecursiveUpdateDepth(5u),
+      kImuSyncTimeoutUs(4000) {}
 
 void Imu::triggerMeasurement() {
   // Check whether an overflow caused the interrupt.
@@ -33,9 +33,9 @@ void Imu::publish() {
     DEBUG_PRINTLN((topic_ + " (Imu.cpp): Publish."));
     bool success;
 #ifdef DEBUG
-    success = updateDataRecursive(0u, false);
+    success = updateDataIterative();
 #else
-    success = updateDataRecursive(0u, false);
+    success = updateDataIterative();
 #endif
     if (!success) {
       Sensor::newMeasurementIsNotAvailable();

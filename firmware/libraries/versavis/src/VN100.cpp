@@ -36,7 +36,7 @@
 
 VN100::VN100(ros::NodeHandle *nh, const String &topic, const int rate_hz,
              Timer &timer)
-    : Imu(nh, topic, rate_hz, timer), kImuSyncTimeoutUs(4000) {
+    : Imu(nh, topic, rate_hz, timer) {
   imu_accelerator_sensitivity_ = 1.0 / (0.00025 * 9.81);
   imu_gyro_sensitivity_ = 1.0 / (0.05 * M_PI / 180);
 }
@@ -158,34 +158,29 @@ void VN100::clearBuffer() {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 bool VN100::updateData() {
   sensor_data_ = readImuData();
-  if (sensor_data_ == nullptr) {
-    return false;
-  } else {
-    return true;
-  }
+  return sensor_data_ != nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-bool VN100::updateDataRecursive(const unsigned int depth, bool success) {
-  if (depth == 0) {
-    tic_ = micros();
-  }
-  Sensor::setTimestampNow();
-  sensor_data_ = readImuData();
-  if (sensor_data_ == nullptr || checksum_.s != checksum(in_, 28, true)) {
-    if (depth > max_recursive_update_depth_ ||
-        micros() - tic_ > kImuSyncTimeoutUs) {
-      return false;
+bool VN100::updateDataIterative() {
+  uint64_t tic = micros();
+  bool success = false;
+  for (size_t depth = 0; depth < kMaxRecursiveUpdateDepth; ++depth) {
+    Sensor::setTimestampNow();
+    sensor_data_ = readImuData();
+    if (sensor_data_ == nullptr || checksum_.s != checksum(in_, 28, true)) {
+      if (micros() - tic > kImuSyncTimeoutUs) {
+        return false;
+      }
+      DEBUG_PRINTLN(topic_ +
+                    " (VN100.cpp): Failed IMU update detected, trying again " +
+                    (String)(kMaxRecursiveUpdateDepth - depth) + " times.");
+    } else {
+      return true;
     }
-    DEBUG_PRINTLN(topic_ +
-                  " (VN100.cpp): Failed IMU update detected, recurring " +
-                  (String)(max_recursive_update_depth_ - depth) + " times.");
-    success = updateDataRecursive(depth + 1, success);
-  } else {
-    success = true;
   }
-  return success;
+  return false;
 }
