@@ -64,6 +64,12 @@
       <param name="gain" value="5" /> -->
       <param name="auto_gain" value="Continuous" />
       <param name="auto_white_balance" value="Continuous" />
+
+      <!-- Options are: clahe, standard or none -->
+      <param name="histogram_equalization_enabled" value="none" />
+      <param name="histogram_equalization_clahe_clip_limit" value="2" />
+      <param name="histogram_equalization_clahe_grid_size" value="8" />
+
     </node>
     <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
 	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
