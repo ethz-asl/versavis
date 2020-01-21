@@ -36,24 +36,24 @@
 
 VN100::VN100(ros::NodeHandle *nh, const String &topic, const int rate_hz,
              Timer &timer)
-    : Imu(nh, topic, rate_hz, timer) {
+    : Imu(nh, topic, rate_hz, timer), uart_(&Serial1), kMessageLength(30) {
   imu_accelerator_sensitivity_ = 1.0 / (0.00025 * 9.81);
   imu_gyro_sensitivity_ = 1.0 / (0.05 * M_PI / 180);
 }
 
 void VN100::setup() {
   DEBUG_PRINTLN((topic_ + " (VN100.cpp): Setup.").c_str());
-  // Start Serial1 for IMU communication
-  Serial1.begin(921600, SERIAL_8N1);
+  // Start Serial for IMU communication
+  uart_->begin(921600, SERIAL_8N1);
   delay(20);
-  Serial.setTimeout(2);
+  uart_->setTimeout(2);
 
   // Check whether IMU is setup correctly. Configuration is done on VectorNav
   // Control Center software.
-  Serial1.print("$VNRRG,00*XX\r\n");
+  uart_->print("$VNRRG,00*XX\r\n");
   delay(20);
   byte response[100];
-  Serial1.readBytes(response, Serial1.available());
+  uart_->readBytes(response, uart_->available());
 
   // Check that "User Tag" is set to 7665727361766973 (HEX for versavis).
   if (strcmp((char *)response, "$VNRRG,00,7665727361766973*51\r\n") != 0) {
@@ -67,9 +67,9 @@ void VN100::setup() {
 ////////////////////////////////////////////////////////////////////////////
 int16_t *VN100::readImuData() {
   clearBuffer();
-  Serial1.print("$VNBOM,1*XX\r\n");
+  uart_->print("$VNBOM,1*XX\r\n");
   const uint64_t local_tic = micros();
-  while (Serial1.available() < 30) {
+  while (uart_->available() < kMessageLength) {
     if (micros() - local_tic < kImuSyncTimeoutUs / 2) {
       delayMicroseconds(1); // Wait until full message is received.
     } else {
@@ -78,8 +78,8 @@ int16_t *VN100::readImuData() {
       return nullptr;
     }
   }
-  size_t bytes = Serial1.readBytes(in_, 30);
-  if (bytes != 30) {
+  size_t bytes = uart_->readBytes(in_, kMessageLength);
+  if (bytes != kMessageLength) {
     DEBUG_PRINTLN(topic_ + " (VN100.cpp): Not all data read (timeout?).");
     return nullptr;
   }
@@ -143,9 +143,9 @@ unsigned short VN100::checksum(byte data[], size_t length,
 ////////////////////////////////////////////////////////////////////////////
 void VN100::clearBuffer() {
   const uint64_t local_tic = micros();
-  while (Serial1.available()) {
+  while (uart_->available()) {
     if (micros() - local_tic < kImuSyncTimeoutUs / 3) {
-      Serial1.readBytes(in_, Serial1.available());
+      uart_->readBytes(in_, uart_->available());
     } else {
       return;
     }
