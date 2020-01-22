@@ -5,7 +5,7 @@
 
 Imu::Imu(ros::NodeHandle *nh, const String &topic, const int rate_hz,
          Timer &timer)
-    : Sensor(nh, topic, rate_hz, timer, imu_msg_),
+    : TimedSensor(nh, topic, rate_hz, timer, imu_msg_),
       max_recursive_update_depth_(10u) {}
 
 void Imu::triggerMeasurement() {
@@ -63,5 +63,5 @@ void Imu::setupPublisher() {
 
 void Imu::begin() {
   DEBUG_PRINTLN((topic_ + " (Imu.cpp): Begin.").c_str());
-  Sensor::setupTimer();
+  TimedSensor::setupTimer();
 }
