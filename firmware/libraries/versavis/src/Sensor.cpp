@@ -29,6 +29,21 @@ Sensor::Sensor(ros::NodeHandle *nh, const String &topic,
   }
 }
 
+// Timestamp message version.
+Sensor::Sensor(ros::NodeHandle *nh, const String &topic,
+               std_msgs::Time &time_msg,
+               const trigger_type type /* = trigger_type::NON_INVERTED */)
+    : nh_(nh), topic_(topic), publisher_(topic.c_str(), &time_msg),
+      type_(type) {
+  if (nh == nullptr) {
+    error((topic_ + " (Sensor.cpp): The node handle is not available.").c_str(),
+          49);
+  }
+  if (topic.length() == 0) {
+    error((topic_ + " (Sensor.cpp): Timestamp topic is empty.").c_str(), 51);
+  }
+}
+
 void Sensor::setTimestampNow() { timestamp_ = nh_->now(); }
 
 ros::Time Sensor::getTimestamp() const { return timestamp_; }
