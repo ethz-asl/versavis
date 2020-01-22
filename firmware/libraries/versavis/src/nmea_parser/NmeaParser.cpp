@@ -43,6 +43,7 @@ NmeaParser::SentenceType NmeaParser::parseChar(const char c) {
     }
     break;
   case State::kCheckSum:
+    // TODO(rikba): Catch failure when checksum grows longer than 2 characters.
     addCharacter(c, cs_, kCsSize);                      // Fill check sum.
     if ((c == kSentenceEnd1) || (c == kSentenceEnd2)) { // Done!
       transitionState(State::kSuccess);
