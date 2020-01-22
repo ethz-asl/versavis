@@ -13,9 +13,6 @@ Sensor::Sensor(ros::NodeHandle *nh, const String &topic,
     error((topic_ + " (Sensor.cpp): The node handle is not available.").c_str(),
           49);
   }
-  if (topic.length() == 0) {
-    error((topic_ + " (Sensor.cpp): Time message topic is empty.").c_str(), 51);
-  }
 }
 
 // IMU message version.

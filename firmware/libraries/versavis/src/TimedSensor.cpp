@@ -37,7 +37,7 @@ uint16_t TimedSensor::calculatePrescaler(const uint16_t rate_hz) const {
 
   // Amount of clock ticks required to count to the specified period time.
   const uint32_t kRequiredTicks = CPU_FREQ_HZ / static_cast<double>(rate_hz);
-  DEBUG_PRINT((topic_ + " (Sensor.cpp): required ticks "));
+  DEBUG_PRINT((topic_ + " (TimedSensor.cpp): required ticks "));
   DEBUG_PRINTDECLN(kRequiredTicks);
   // Available prescalers on Arduino Zero are restricted to those values.
   const uint16_t kAvailablePrescalers[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
@@ -50,17 +50,18 @@ uint16_t TimedSensor::calculatePrescaler(const uint16_t rate_hz) const {
   }
   // If this part is reached, no available prescaler fits with the goal
   // framerate on this MCU.
-  error((topic_ + " (Sensor.cpp): No prescaler found.").c_str(), 50);
+  error((topic_ + " (TimedSensor.cpp): No prescaler found.").c_str(), 50);
   return 0;
 }
 
 void TimedSensor::setupTimer() {
   prescaler_ = calculatePrescaler(rate_hz_);
   if (prescaler_ == 0) {
-    error((topic_ + " (Sensor.cpp): prescaler_ is zero.").c_str(), 99);
+    error((topic_ + " (TimedSensor.cpp): prescaler_ is zero.").c_str(), 99);
   }
   cpu_freq_prescaler_ = CPU_FREQ_HZ / prescaler_;
-  DEBUG_PRINT((topic_ + " (Sensor.cpp): Setup timer with prescaler ").c_str());
+  DEBUG_PRINT(
+      (topic_ + " (TimedSensor.cpp): Setup timer with prescaler ").c_str());
   DEBUG_PRINTDECLN(prescaler_);
   // The compare value defines at which tick the timer is going to overflow
   // and triggering the corresponding interrupt.
@@ -68,7 +69,7 @@ void TimedSensor::setupTimer() {
   if (compare_ > max_compare_) {
     // The compare value can never be reached by a 16bit timer. Choose a
     // higher prescaler or another timer with 32bit.
-    error((topic_ + " (Sensor.cpp): compare_ > pow(2,16) failed.").c_str(),
+    error((topic_ + " (TimedSensor.cpp): compare_ > pow(2,16) failed.").c_str(),
           100);
   }
 
