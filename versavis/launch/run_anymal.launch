@@ -10,9 +10,11 @@
   <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
   <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
  -->
+  <arg name="versavis_cam0_serial_no" default="" />
+
    <!-- Determine this using rosrun pointgrey_camera_driver list_cameras.
        If not specified, defaults to first camera found. -->
-  <arg name="cam0_serial" default="19195161" />
+  <arg name="cam0_serial" default="$(arg versavis_cam0_serial_no)" />
   <arg name="calibrated" default="1" />
   <arg name="node_start_delay_cam0" default="0.0" />
   <!-- camera nodelet system -->
