@@ -16,6 +16,8 @@
   <arg name="calibrated" default="1" />
   <arg name="node_start_delay_cam0" default="0.0" />
   <!-- camera nodelet system -->
+  
+  <arg name="versavis_cam0_serial_no" default="" />
 
     <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
           args="manager"
@@ -33,7 +35,7 @@
 
       <!-- The following params will be included from a seperate config file soon, this is just for a quick test -->
       <param name="frame_id" value="darpa_head_cam" />
-      <param name="serial" value="$(arg cam0_serial)" />
+      <param name="serial" value="$(arg versavis_cam0_serial_no)" />
       <param name="acquisition_frame_rate_enable" value="false" />
       <param name="image_format_color_coding" value="BayerBG8" /> <!-- BayerBG8 -->
       <param name="color_processing_algorithm" value="HQ_LINEAR" /> <!-- Options: DEFAULT, HQ_LINEAR, DIRECTIONAL_FILTER, WEIGHTED_DIRECTIONAL_FILTER -->
