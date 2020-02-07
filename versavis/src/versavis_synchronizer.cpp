@@ -16,11 +16,10 @@ namespace versavis {
 VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
                                            const ros::NodeHandle &nh_private)
     : nh_(nh), nh_private_(nh_private), image_transport_(nh),
-      kMaxImageCandidateLength(10), kMinSuccessfullConsecutiveMatches(4),
-      kMaxImageDelayThreshold(0.1),
-      slow_publisher_image_counter_(0),
-      kSlowPublisherImageCounterThreshold(10), init_number_(0),
-      initialized_(false) {
+      received_first_camera_info_(false), kMaxImageCandidateLength(10),
+      kMinSuccessfullConsecutiveMatches(4), kMaxImageDelayThreshold(0.1),
+      slow_publisher_image_counter_(0), kSlowPublisherImageCounterThreshold(10),
+      init_number_(0), initialized_(false), forward_camera_info_(false) {
   ROS_INFO("Versavis message compiler started. Version 1.0");
   readParameters();
 
@@ -28,6 +27,19 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
   image_sub_ = nh_.subscribe(driver_topic_, 10u,
                              &VersaVISSynchronizer::imageCallback, this);
   ROS_INFO("Subscribing to %s.", driver_topic_.c_str());
+
+  // Subscriber to an exsternal publisher of a camera info topic, this can be
+  // the driver or another node. It is not required that the camera info message
+  // is synchrinized with the image. This node will simply take the most recent
+  // camera info message and publish it in sync with the restamped image
+  // messabge.
+  if (forward_camera_info_) {
+    camera_info_sub_ =
+        nh_.subscribe(camera_info_sub_topic_, 10u,
+                      &VersaVISSynchronizer::cameraInfoCallback, this);
+    ROS_INFO("Subscribing to camera info topic %s.",
+             camera_info_sub_topic_.c_str());
+  }
 
   // Subscriber for the image time message containing both the corrected
   // timestamp and the sequence number.
@@ -40,13 +52,27 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
   // initialized.
   initialized_pub_ = nh_.advertise<std_msgs::Bool>(initialized_pub_topic_, 1u);
   ROS_INFO("Publishing to %s.", initialized_pub_topic_.c_str());
+  if (forward_camera_info_) {
+    fast_camera_pub_ = image_transport_.advertiseCamera(versavis_topic_, 10u);
+    ROS_INFO("Publishing Image to %s.", image_fast_pub_topic_.c_str());
+    ROS_INFO("Publishing CameraInfo to %s.",
+             camera_info_fast_pub_topic_.c_str());
 
-  image_fast_pub_ = image_transport_.advertise(image_fast_pub_topic_, 10u);
-  ROS_INFO("Publishing to %s.", image_fast_pub_topic_.c_str());
+    if (publish_slow_images_) {
+      slow_camera_pub_ =
+          image_transport_.advertiseCamera(versavis_topic_ + "/slow", 10u);
+      ROS_INFO("Publishing Image to %s.", image_slow_pub_topic_.c_str());
+      ROS_INFO("Publishing CameraInfo to %s.",
+               camera_info_slow_pub_topic_.c_str());
+    }
+  } else {
+    image_fast_pub_ = image_transport_.advertise(image_fast_pub_topic_, 10u);
+    ROS_INFO("Publishing to %s.", image_fast_pub_topic_.c_str());
 
-  if (publish_slow_images_) {
-    image_slow_pub_ = image_transport_.advertise(image_slow_pub_topic_, 1u);
-    ROS_INFO("Publishing to %s.", image_slow_pub_topic_.c_str());
+    if (publish_slow_images_) {
+      image_slow_pub_ = image_transport_.advertise(image_slow_pub_topic_, 1u);
+      ROS_INFO("Publishing to %s.", image_slow_pub_topic_.c_str());
+    }
   }
 }
 
@@ -161,6 +187,15 @@ void VersaVISSynchronizer::imageCallback(
   }
 }
 
+void VersaVISSynchronizer::cameraInfoCallback(
+    const sensor_msgs::CameraInfo &camera_info_msg) {
+  std::lock_guard<std::mutex> mutex_lock(mutex_);
+  ROS_INFO_ONCE("%s: Received first caemra info message.",
+                camera_info_sub_topic_.c_str());
+  received_first_camera_info_ = true;
+  camera_info_msg_ = camera_info_msg;
+}
+
 void VersaVISSynchronizer::imageTimeCallback(
     const versavis::TimeNumbered &image_triggered_time_msg) {
   std::lock_guard<std::mutex> mutex_lock(mutex_);
@@ -201,12 +236,33 @@ void VersaVISSynchronizer::publishImg(
   last_image_number_ = image_msg.number;
   last_stamp_ = image_msg.image.header.stamp;
 
-  image_fast_pub_.publish(image_msg.image);
+  if (forward_camera_info_) {
+    if (received_first_camera_info_) {
+      camera_info_msg_.header.stamp = image_msg.image.header.stamp;
+      fast_camera_pub_.publish(image_msg.image, camera_info_msg_);
+    } else {
+      ROS_WARN_THROTTLE(2.0,
+                        "No camera info received yet, will not publish image.");
+    }
+  } else {
+    image_fast_pub_.publish(image_msg.image);
+  }
+
   if (publish_slow_images_) {
     // Publish color/raw image at lower rate.
     if (slow_publisher_image_counter_ >=
         kSlowPublisherImageCounterThreshold - 1u) {
-      image_slow_pub_.publish(image_msg.image);
+      if (forward_camera_info_) {
+        if (received_first_camera_info_) {
+          camera_info_msg_.header.stamp = image_msg.image.header.stamp;
+          slow_camera_pub_.publish(image_msg.image, camera_info_msg_);
+        } else {
+          ROS_WARN_THROTTLE(
+              2.0, "No camera info received yet, will not publish image.");
+        }
+      } else {
+        image_slow_pub_.publish(image_msg.image);
+      }
       slow_publisher_image_counter_ = 0u;
     } else {
       ++slow_publisher_image_counter_;
@@ -222,18 +278,36 @@ bool VersaVISSynchronizer::readParameters() {
     ROS_ERROR("Define an image topic from the camera driver.");
   }
 
-  std::string versavis_topic;
-  if (!nh_private_.getParam("versavis_topic", versavis_topic)) {
+  if (!nh_private_.getParam("versavis_topic", versavis_topic_)) {
     ROS_ERROR("Define a topic range where the corrected image is published.");
   } else {
-    if (versavis_topic.back() != '/') {
-      versavis_topic = versavis_topic + "/";
+    if (versavis_topic_.back() != '/') {
+      versavis_topic_ = versavis_topic_ + "/";
     }
-    image_time_sub_topic_ = versavis_topic + "image_time";
-    image_fast_pub_topic_ = versavis_topic + "image_raw";
-    initialized_pub_topic_ = versavis_topic + "init";
+    image_time_sub_topic_ = versavis_topic_ + "image_time";
+    image_fast_pub_topic_ = versavis_topic_ + "image_raw";
+    camera_info_fast_pub_topic_ = versavis_topic_ + "camera_info";
+    initialized_pub_topic_ = versavis_topic_ + "init";
     if (publish_slow_images_) {
-      image_slow_pub_topic_ = versavis_topic + "slow/image_raw";
+      image_slow_pub_topic_ = versavis_topic_ + "slow/image_raw";
+      camera_info_slow_pub_topic_ = versavis_topic_ + "slow/camera_info";
+    }
+  }
+
+  if (nh_private_.getParam("camera_info_topic", camera_info_sub_topic_)) {
+    if (camera_info_sub_topic_.empty()) {
+      ROS_ERROR_STREAM("An empty camera info topic has been provided, topic: '"
+                       << camera_info_sub_topic_ << "'");
+    } else {
+      if (camera_info_fast_pub_topic_.empty()) {
+        ROS_ERROR("No valid camera info output topic was set, set the "
+                  "'versavis_topic' param correctly!'");
+      } else {
+        ROS_INFO_STREAM("A camera info topic has been provided, versavis will "
+                        "synchronize and forward it to '"
+                        << camera_info_sub_topic_ << "'");
+        forward_camera_info_ = true;
+      }
     }
   }
 
