@@ -69,9 +69,9 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
 
     if (publish_slow_images_) {
       camera_info_slow_pub_ = nh_.advertise<sensor_msgs::CameraInfo>(
-          camera_info_fast_pub_topic_, 10u);
+          camera_info_slow_pub_topic_, 10u);
       ROS_INFO_STREAM("Publishing (slow) camera info to "
-                      << camera_info_fast_pub_topic_);
+                      << camera_info_slow_pub_topic_);
     }
   }
 }
