@@ -89,8 +89,7 @@ private:
   // Constants.
   const uint8_t kMaxImageCandidateLength;
   const uint8_t kMinSuccessfullConsecutiveMatches;
-  const double kMaxImageDelayThreshold;
-  const uint8_t kSlowPublisherImageCounterThreshold;
+  const double kMaxImageDelayThreshold;;
 
   // Image numbers and initialization.
   uint8_t init_number_;
@@ -101,6 +100,7 @@ private:
   // Configuration.
   uint8_t slow_publisher_image_counter_;
   bool publish_slow_images_;
+  int publish_every_n_image_;
   bool forward_camera_info_;
   ros::Duration imu_offset_;
 
