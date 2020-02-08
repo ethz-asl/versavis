@@ -51,27 +51,27 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
   // Publisher to let the triggering board know as soon as the camera is
   // initialized.
   initialized_pub_ = nh_.advertise<std_msgs::Bool>(initialized_pub_topic_, 1u);
-  ROS_INFO("Publishing to %s.", initialized_pub_topic_.c_str());
+  ROS_INFO("Publishing initialization status to %s.",
+           initialized_pub_topic_.c_str());
+
+  image_fast_pub_ = image_transport_.advertise(image_fast_pub_topic_, 10u);
+  ROS_INFO("Publishing image o %s.", image_fast_pub_topic_.c_str());
+
+  if (publish_slow_images_) {
+    image_slow_pub_ = image_transport_.advertise(image_slow_pub_topic_, 1u);
+    ROS_INFO("Publishing (slow) image to %s.", image_slow_pub_topic_.c_str());
+  }
+
   if (forward_camera_info_) {
-    fast_camera_pub_ = image_transport_.advertiseCamera(versavis_topic_, 10u);
-    ROS_INFO("Publishing Image to %s.", image_fast_pub_topic_.c_str());
-    ROS_INFO("Publishing CameraInfo to %s.",
-             camera_info_fast_pub_topic_.c_str());
+    camera_info_fast_pub_ =
+        nh_.advertise<sensor_msgs::CameraInfo>(camera_info_fast_pub_topic_, 10u);
+    ROS_INFO_STREAM("Publishing camera info to " << camera_info_fast_pub_topic_);
 
     if (publish_slow_images_) {
-      slow_camera_pub_ =
-          image_transport_.advertiseCamera(versavis_topic_ + "/slow", 10u);
-      ROS_INFO("Publishing Image to %s.", image_slow_pub_topic_.c_str());
-      ROS_INFO("Publishing CameraInfo to %s.",
-               camera_info_slow_pub_topic_.c_str());
-    }
-  } else {
-    image_fast_pub_ = image_transport_.advertise(image_fast_pub_topic_, 10u);
-    ROS_INFO("Publishing to %s.", image_fast_pub_topic_.c_str());
-
-    if (publish_slow_images_) {
-      image_slow_pub_ = image_transport_.advertise(image_slow_pub_topic_, 1u);
-      ROS_INFO("Publishing to %s.", image_slow_pub_topic_.c_str());
+      camera_info_slow_pub_ = nh_.advertise<sensor_msgs::CameraInfo>(
+          camera_info_fast_pub_topic_, 10u);
+      ROS_INFO_STREAM("Publishing (slow) camera info to "
+                      << camera_info_fast_pub_topic_);
     }
   }
 }
@@ -190,7 +190,7 @@ void VersaVISSynchronizer::imageCallback(
 void VersaVISSynchronizer::cameraInfoCallback(
     const sensor_msgs::CameraInfo &camera_info_msg) {
   std::lock_guard<std::mutex> mutex_lock(mutex_);
-  ROS_INFO_ONCE("%s: Received first caemra info message.",
+  ROS_INFO_ONCE("%s: Received first camera info message.",
                 camera_info_sub_topic_.c_str());
   received_first_camera_info_ = true;
   camera_info_msg_ = camera_info_msg;
@@ -239,14 +239,14 @@ void VersaVISSynchronizer::publishImg(
   if (forward_camera_info_) {
     if (received_first_camera_info_) {
       camera_info_msg_.header.stamp = image_msg.image.header.stamp;
-      fast_camera_pub_.publish(image_msg.image, camera_info_msg_);
+      camera_info_fast_pub_.publish(camera_info_msg_);
     } else {
       ROS_WARN_THROTTLE(2.0,
                         "No camera info received yet, will not publish image.");
     }
-  } else {
-    image_fast_pub_.publish(image_msg.image);
   }
+  image_fast_pub_.publish(image_msg.image);
+
 
   if (publish_slow_images_) {
     // Publish color/raw image at lower rate.
@@ -255,14 +255,13 @@ void VersaVISSynchronizer::publishImg(
       if (forward_camera_info_) {
         if (received_first_camera_info_) {
           camera_info_msg_.header.stamp = image_msg.image.header.stamp;
-          slow_camera_pub_.publish(image_msg.image, camera_info_msg_);
+          camera_info_slow_pub_.publish(camera_info_msg_);
         } else {
           ROS_WARN_THROTTLE(
               2.0, "No camera info received yet, will not publish image.");
         }
-      } else {
-        image_slow_pub_.publish(image_msg.image);
       }
+      image_slow_pub_.publish(image_msg.image);
       slow_publisher_image_counter_ = 0u;
     } else {
       ++slow_publisher_image_counter_;
@@ -299,15 +298,10 @@ bool VersaVISSynchronizer::readParameters() {
       ROS_ERROR_STREAM("An empty camera info topic has been provided, topic: '"
                        << camera_info_sub_topic_ << "'");
     } else {
-      if (camera_info_fast_pub_topic_.empty()) {
-        ROS_ERROR("No valid camera info output topic was set, set the "
-                  "'versavis_topic' param correctly!'");
-      } else {
-        ROS_INFO_STREAM("A camera info topic has been provided, versavis will "
-                        "synchronize and forward it to '"
-                        << camera_info_sub_topic_ << "'");
-        forward_camera_info_ = true;
-      }
+      ROS_INFO_STREAM("A camera info topic has been provided, versavis will "
+                      "synchronize and forward it to '"
+                      << camera_info_sub_topic_ << "'");
+      forward_camera_info_ = true;
     }
   }
 

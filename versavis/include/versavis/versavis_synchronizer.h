@@ -61,9 +61,8 @@ private:
   ros::Subscriber camera_info_sub_;
   image_transport::Publisher image_fast_pub_;
   image_transport::Publisher image_slow_pub_;
-  // If camera info forwarding is enabled, then the CameraPublishers are used.
-  image_transport::CameraPublisher fast_camera_pub_;
-  image_transport::CameraPublisher slow_camera_pub_;
+  ros::Publisher camera_info_fast_pub_;
+  ros::Publisher camera_info_slow_pub_;
   ros::Publisher initialized_pub_;
   ros::Subscriber image_time_sub_;
 
@@ -72,8 +71,8 @@ private:
   std::string driver_topic_;
   std::string camera_info_sub_topic_;
   std::string image_fast_pub_topic_;
-  std::string camera_info_fast_pub_topic_;
   std::string image_slow_pub_topic_;
+  std::string camera_info_fast_pub_topic_;
   std::string camera_info_slow_pub_topic_;
   std::string image_time_sub_topic_;
   std::string initialized_pub_topic_;
