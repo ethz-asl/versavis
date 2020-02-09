@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<!-- TODO(timon/marco):
+ * set the versavis_cam0_calibration_file to the camera calibration yaml, this is the same format as image to map is taking
+ * double check the cam serial number -->
+
+<launch>
+  <!-- If a camera calibration file (yaml) is provided, versavis will publish a camera info topic alongside the image -->
+  <arg name="versavis_cam0_calibration_file" default="package://PACKAGE/PATH_TO_CALIB_FILE.yaml" />
+  <!-- The blackfly driver will pick the first camera if no serial is provided -->
+  <arg name="versavis_cam0_serial_no" default="19195161" />
+  <arg name="versavis_cam0_frame_id" default="darpa_head_cam" />
+  <!-- Start camera driver with a delay -->
+  <arg name="versavis_cam0_start_delay" default="0.0" />
+  <arg name="versavis_cam0_color_coding" default="BayerBG8" />
+  <!-- Options: DEFAULT, HQ_LINEAR, DIRECTIONAL_FILTER, WEIGHTED_DIRECTIONAL_FILTER -->
+  <arg name="versavis_cam0_color_processing_algorithm" default="HQ_LINEAR" />
+  <!-- Set maximum and minimum of auto exposure -->
+  <arg name="versavis_cam0_exposure_max_us" default="5000" />
+  <arg name="versavis_cam0_exposure_min_us" default="300" />
+  <!-- Flip image on x and/or y axis -->
+  <arg name="versavis_cam0_flip_x" default="True" />
+  <arg name="versavis_cam0_flip_y" default="True" />
+  <!-- Options are: clahe, standard or none -->
+  <arg name="versavis_cam0_histogram_equalization_mode" default="none" />
+
+  <!-- If enabled, versavis will also publish a throttled image topic at /versavis/cam0/slow/ -->
+  <arg name="versavis_cam0_publish_slow" default="True" />
+  <!-- Example: if the original frequency is 20Hz, publishing every 10th will result in 2Hz -->
+  <arg name="versavis_cam0_publish_slow_every_nth" default="10" />
+
+  <include file="$(find versavis)/launch/run_versavis_bfs_adis16448_cam0.launch" pass_all_args="true"/>
+</launch>
