@@ -83,7 +83,7 @@
           output="screen"
           required="true">
       <param name="driver_topic" type="string" value="/BFS_usb_0/image_numbered" />
-      <param name="camera_info_topic" type="string" value="/BFS_usb_0/image_numbered" unless="$(eval arg('versavis_cam0_calibration_file') == '')"/>
+      <param name="camera_info_topic" type="string" value="/BFS_usb_0/camera_info" unless="$(eval arg('versavis_cam0_calibration_file') == '')"/>
       <param name="versavis_topic" type="string" value="/versavis/cam0/" />
       <param name="imu_offset_us" type="int" value="0" />
       <param name="publish_slow_images" type="bool" value="$(arg versavis_cam0_publish_slow)" />
