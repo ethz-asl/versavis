@@ -32,10 +32,7 @@
 
 #ifndef VN100_h
 #define VN100_h
-#include "Arduino.h"
 #include "Imu.h"
-#include <SPI.h>
-#include <ros.h>
 
 // ADIS16448BMLZ Class Definition
 class VN100 : public Imu {
@@ -46,8 +43,8 @@ public:
 
   void setup();
 
-  // Update data internally with recursion.
-  bool updateDataRecursive(const unsigned int depth, bool success);
+  // Update data internally with validity checks.
+  bool updateDataIterative();
 
   // Update data withoput recursion.
   bool updateData();
@@ -101,11 +98,13 @@ private:
   } checksum_;
 
   // Parameters
-  const uint64_t kImuSyncTimeoutUs;
-  uint64_t tic_;
-  byte in_[30]; // array to save data send from the IMU
+  const size_t kMessageLength;
+  byte *in_; // array to save data send from the IMU
   float imu_accelerator_sensitivity_;
   float imu_gyro_sensitivity_;
+
+  // Serial interface to be used (can be Serial or Serial1).
+  Uart *uart_;
 };
 
 #endif

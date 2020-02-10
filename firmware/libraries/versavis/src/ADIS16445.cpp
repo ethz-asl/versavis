@@ -375,29 +375,34 @@ float ADIS16445::tempScale(int16_t sensorData) {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 bool ADIS16445::updateData() {
   sensor_data_ = sensorReadAll();
-  return true;
+  return sensor_data_ != nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-bool ADIS16445::updateDataRecursive(const unsigned int depth, bool success) {
-  sensor_data_ = sensorReadAll();
-  // Assuming that 1) temperature changes much slower than IMU sampling rate, 2)
-  // all other measurements are correct if TEMP_OUT is correct. It may be
-  // necessary to filter outliers out by using moving average filter before
-  // publishing IMU topic (i.e., versavis_imu_receiver.cpp)
-  if (sensor_data_[7] != regRead(TEMP_OUT)) {
-    if (depth > max_recursive_update_depth_) {
-      return false;
+bool ADIS16445::updateDataIterative() {
+  uint64_t tic = micros();
+  bool success = false;
+  for (size_t depth = 0; depth < kMaxRecursiveUpdateDepth; ++depth) {
+    Sensor::setTimestampNow();
+    sensor_data_ = sensorReadAll();
+    // Assuming that 1) temperature changes much slower than IMU sampling rate,
+    // 2) all other measurements are correct if TEMP_OUT is correct. It may be
+    // necessary to filter outliers out by using moving average filter before
+    // publishing IMU topic (i.e., versavis_imu_receiver.cpp)
+    if (sensor_data_ == nullptr || sensor_data_[7] != regRead(TEMP_OUT)) {
+      if (micros() - tic > kImuSyncTimeoutUs) {
+        return false;
+      }
+      DEBUG_PRINTLN(
+          topic_ +
+          " (ADIS16445.cpp): Failed IMU update detected, trying again " +
+          (String)(kMaxRecursiveUpdateDepth - depth) + " times.");
+    } else {
+      return true;
     }
-    DEBUG_PRINTLN(topic_ +
-                  " (ADIS16445.cpp): Failed IMU update detected, recurring " +
-                  (String)(max_recursive_update_depth_ - depth) + " times.");
-    success = updateDataRecursive(depth + 1, success);
-  } else {
-    success = true;
   }
-  return success;
+  return false;
 }

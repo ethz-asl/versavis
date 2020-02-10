@@ -99,8 +99,8 @@ public:
   // Scale temperature data. Returns scaled data as float.
   float tempScale(int16_t sensorData);
 
-  // Update data internally with recursion.
-  bool updateDataRecursive(const unsigned int depth, bool success);
+  // Update data internally with validity checks.
+  bool updateDataIterative();
 
   // Update data withoput recursion.
   bool updateData();
