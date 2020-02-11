@@ -83,7 +83,7 @@
           output="screen"
           required="true">
       <param name="driver_topic" type="string" value="/BFS_usb_0/image_numbered" />
-      <param name="camera_info_topic" type="string" value="/BFS_usb_0/image_numbered" unless="$(eval arg('versavis_cam0_calibration_file') == '')"/>
+      <param name="camera_info_topic" type="string" value="/BFS_usb_0/camera_info" unless="$(eval arg('versavis_cam0_calibration_file') == '')"/>
       <param name="versavis_topic" type="string" value="/versavis/cam0/" />
       <param name="imu_offset_us" type="int" value="0" />
       <param name="publish_slow_images" type="bool" value="$(arg versavis_cam0_publish_slow)" />
@@ -109,4 +109,22 @@
     <param name="imu_gyro_covariance"                   value="6e-9" />
     <param name="imu_sub_topic"           type="string" value="/versavis/imu_micro"/>
   </node>
+
+  <node pkg="nodelet" type="nodelet" args="standalone image_proc/crop_decimate" name="image_resize_node" output="screen">
+    <remap from="camera/image_raw" to="versavis/cam0/image_raw"/>
+    <remap from="camera/camera_info" to="versavis/cam0/camera_info"/>
+    <remap from="camera_out/image_raw" to="/versavis/cam0/small/image_raw"/>
+    <remap from="camera_out/camera_info" to="/versavis/cam0/small/camera_info"/>
+
+    <param name="decimation_x" value="2" />
+    <param name="decimation_y" value="2" />
+
+    <param name="x_offset" value="0" />
+    <param name="y_offset" value="0" />
+
+    <param name="width" value="1440" />
+    <param name="height" value="1080" />
+    <param name="interpolation" value="1" />
+  </node>
+
 </launch>
