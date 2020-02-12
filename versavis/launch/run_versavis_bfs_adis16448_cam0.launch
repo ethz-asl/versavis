@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+
+<launch>
+  <!-- If a camera calibration file (yaml) is provided, versavis will publish a camera info topic alongside the image -->
+  <arg name="versavis_cam0_calibration_file" default="" />
+  <!-- The blackfly driver will pick the first camera if no serial is provided -->
+  <arg name="versavis_cam0_serial_no" default="" />
+  <arg name="versavis_cam0_frame_id" default="cam0" />
+  <!-- Start camera driver with a delay -->
+  <arg name="versavis_cam0_start_delay" default="0.0" />
+  <arg name="versavis_cam0_color_coding" default="BayerBG8" />
+  <!-- Options: DEFAULT, HQ_LINEAR, DIRECTIONAL_FILTER, WEIGHTED_DIRECTIONAL_FILTER -->
+  <arg name="versavis_cam0_color_processing_algorithm" default="DEFAULT" />
+  <!-- Set maximum and minimum of auto exposure -->
+  <arg name="versavis_cam0_exposure_max_us" default="5000" />
+  <arg name="versavis_cam0_exposure_min_us" default="300" />
+  <!-- Flip image on x and/or y axis -->
+  <arg name="versavis_cam0_flip_x" default="False" />
+  <arg name="versavis_cam0_flip_y" default="False" />
+  <!-- Options are: clahe, standard or none -->
+  <arg name="versavis_cam0_histogram_equalization_mode" default="none" />
+
+  <!-- If enabled, versavis will also publish a throttled image topic at /versavis/cam0/slow/ -->
+  <arg name="versavis_cam0_publish_slow" default="False" />
+  <!-- Example: if the original frequency is 20Hz, publishing every 10th will result in 2Hz -->
+  <arg name="versavis_cam0_publish_slow_every_nth" default="10" />
+
+  <!-- nodelet manager -->
+  <node pkg="nodelet" type="nodelet" name="versavis_camera_manager"
+        args="manager"
+        output="screen"
+        required="true" >
+     <param name="num_worker_threads" value="4" />
+  </node>
+
+  <group ns="BFS_usb_0" >
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+          args="load spinnaker_camera_driver/SpinnakerCameraNodelet /versavis_camera_manager"
+          launch-prefix="bash -c 'sleep $(arg versavis_cam0_start_delay); $0 $@'" >
+      <param name="frame_id" value="$(arg versavis_cam0_frame_id)" />
+      <param name="serial" value="$(arg versavis_cam0_serial_no)" />
+      <param name="acquisition_frame_rate_enable" value="false" />
+      <param name="image_format_color_coding" value="$(arg versavis_cam0_color_coding)" />
+      <param name="color_processing_algorithm" value="$(arg versavis_cam0_color_processing_algorithm)" />
+
+      <!-- Trigger related config -->
+      <param name="acquisition_mode" value="Continuous" />
+      <param name="trigger_source" value="Line0" /> <!-- Pin 2 -->
+      <param name="enable_trigger" value="On" />
+      <param name="trigger_activation_mode" value="RisingEdge" />
+
+      <!-- Exposure related config -->
+      <param name="exposure_mode" value="Timed" />
+      <param name="exposure_auto" value="Continuous" />
+      <!-- param name="exposure_auto" value="Off" />
+      <param name="exposure_time" value="400" /--> <!-- in microseconds -->
+      <param name="line_selector" value="Line2" />
+      <param name="line_mode" value="Output" />
+      <param name="line_source" value="ExposureActive" />
+      <param name="line_inverter" value="false"/>
+      <param name="auto_exposure_time_upper_limit" value="$(arg versavis_cam0_exposure_max_us)" />
+      <param name="auto_exposure_time_lower_limit" value="$(arg versavis_cam0_exposure_min_us)" />
+
+      <!-- Publish camera info based on a calibration file -->
+      <param name="camera_info_url" value="$(arg versavis_cam0_calibration_file)" />
+
+      <param name="reverse_x" value="$(arg versavis_cam0_flip_x)"/>
+      <param name="reverse_y" value="$(arg versavis_cam0_flip_y)"/>
+
+      <!-- Analog related config -->
+      <param name="auto_gain" value="Continuous" />
+      <param name="auto_white_balance" value="Continuous" />
+
+      <param name="histogram_equalization_enabled" value="$(arg versavis_cam0_histogram_equalization_mode)" />
+      <param name="histogram_equalization_clahe_clip_limit" value="2" />
+      <param name="histogram_equalization_clahe_grid_size" value="8" />
+    </node>
+
+    <!-- versavis synchronization nodelet -->
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
+	    args="load versavis/VersaVISSynchronizerNodelet /versavis_camera_manager"
+          output="screen"
+          required="true">
+      <param name="driver_topic" type="string" value="/BFS_usb_0/image_numbered" />
+      <param name="camera_info_topic" type="string" value="/BFS_usb_0/camera_info" unless="$(eval arg('versavis_cam0_calibration_file') == '')"/>
+      <param name="versavis_topic" type="string" value="/versavis/cam0/" />
+      <param name="imu_offset_us" type="int" value="0" />
+      <param name="publish_slow_images" type="bool" value="$(arg versavis_cam0_publish_slow)" />
+      <param name="publish_every_n_image" type="int" value="$(arg versavis_cam0_publish_slow_every_nth)" />
+    </node>
+  </group>
+
+  <!-- Run arduino link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/versavis _baud:=250000" respawn="true" output="screen" />
+
+  <!-- Reset arduino with ros message -->
+  <node pkg="rostopic" type="rostopic" name="resetter"
+    args="pub /versavis/reset std_msgs/Bool false --once" output="screen" />
+
+  <!-- Recieve IMU message. -->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" required="true" output="screen">
+    <!-- ADIS16448AMLZ parameters -->
+    <param name="imu_accelerator_sensitivity"           value="0.000833" />
+    <param name="imu_gyro_sensitivity"                  value="0.04" />
+    <param name="imu_acceleration_covariance"           value="0.043864908" />
+    <param name="imu_gyro_covariance"                   value="6e-9" />
+    <param name="imu_sub_topic"           type="string" value="/versavis/imu_micro"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" args="standalone image_proc/crop_decimate" name="image_resize_node" output="screen">
+    <remap from="camera/image_raw" to="versavis/cam0/image_raw"/>
+    <remap from="camera/camera_info" to="versavis/cam0/camera_info"/>
+    <remap from="camera_out/image_raw" to="/versavis/cam0/small/image_raw"/>
+    <remap from="camera_out/camera_info" to="/versavis/cam0/small/camera_info"/>
+
+    <param name="decimation_x" value="2" />
+    <param name="decimation_y" value="2" />
+
+    <param name="x_offset" value="0" />
+    <param name="y_offset" value="0" />
+
+    <param name="width" value="1440" />
+    <param name="height" value="1080" />
+    <param name="interpolation" value="1" />
+  </node>
+
+</launch>

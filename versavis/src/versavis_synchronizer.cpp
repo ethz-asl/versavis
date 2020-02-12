@@ -18,8 +18,9 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
     : nh_(nh), nh_private_(nh_private), image_transport_(nh),
       received_first_camera_info_(false), kMaxImageCandidateLength(10),
       kMinSuccessfullConsecutiveMatches(4), kMaxImageDelayThreshold(0.1),
-      slow_publisher_image_counter_(0), kSlowPublisherImageCounterThreshold(10),
-      init_number_(0), initialized_(false), forward_camera_info_(false) {
+      slow_publisher_image_counter_(0), init_number_(0), initialized_(false),
+      publish_slow_images_(false), publish_every_n_image_(10),
+      forward_camera_info_(false) {
   ROS_INFO("Versavis message compiler started. Version 1.0");
   readParameters();
 
@@ -251,7 +252,7 @@ void VersaVISSynchronizer::publishImg(
   if (publish_slow_images_) {
     // Publish color/raw image at lower rate.
     if (slow_publisher_image_counter_ >=
-        kSlowPublisherImageCounterThreshold - 1u) {
+        publish_every_n_image_) {
       if (forward_camera_info_) {
         if (received_first_camera_info_) {
           camera_info_msg_.header.stamp = image_msg.image.header.stamp;
@@ -271,7 +272,10 @@ void VersaVISSynchronizer::publishImg(
 
 bool VersaVISSynchronizer::readParameters() {
   ROS_INFO("Read ROS parameters.");
-  nh_private_.param<bool>("publish_slow_images", publish_slow_images_, false);
+  nh_private_.param<bool>("publish_slow_images", publish_slow_images_,
+                          publish_slow_images_);
+  nh_private_.param<int>("publish_every_n_image", publish_every_n_image_,
+                         publish_every_n_image_);
 
   if (!nh_private_.getParam("driver_topic", driver_topic_)) {
     ROS_ERROR("Define an image topic from the camera driver.");
@@ -294,10 +298,7 @@ bool VersaVISSynchronizer::readParameters() {
   }
 
   if (nh_private_.getParam("camera_info_topic", camera_info_sub_topic_)) {
-    if (camera_info_sub_topic_.empty()) {
-      ROS_ERROR_STREAM("An empty camera info topic has been provided, topic: '"
-                       << camera_info_sub_topic_ << "'");
-    } else {
+    if (!camera_info_sub_topic_.empty()) {
       ROS_INFO_STREAM("A camera info topic has been provided, versavis will "
                       "synchronize and forward it to '"
                       << camera_info_sub_topic_ << "'");
