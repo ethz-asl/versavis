@@ -36,7 +36,7 @@
 /* ----- IMU -----*/
 // Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ,
 // USE_ADIS16460 and USE_VN100
-#define USE_ADIS16448BMLZ
+#define USE_VN100
 #define IMU_TOPIC "/versavis/imu_micro"
 #define IMU_RATE 200
 

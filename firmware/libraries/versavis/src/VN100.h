@@ -32,7 +32,10 @@
 
 #ifndef VN100_h
 #define VN100_h
+#include "Arduino.h"
 #include "Imu.h"
+#include <SPI.h>
+#include <ros.h>
 
 // ADIS16448BMLZ Class Definition
 class VN100 : public Imu {
@@ -40,7 +43,7 @@ public:
   // ADIS16448BMLZ Constructor (ChipSelect, DataReady output pin, HardwareReset)
   VN100(ros::NodeHandle *nh, const String &topic, const int rate_hz,
         Timer &timer);
-
+  ~VN100();
   void setup();
 
   // Update data internally with validity checks.
@@ -98,13 +101,11 @@ private:
   } checksum_;
 
   // Parameters
+  //byte in_[30]; // array to save data send from the IMU
   const size_t kMessageLength;
-  byte *in_; // array to save data send from the IMU
+  byte* in_; // array to save data send from the IMU
   float imu_accelerator_sensitivity_;
   float imu_gyro_sensitivity_;
-
-  // Serial interface to be used (can be Serial or Serial1).
-  Uart *uart_;
 };
 
 #endif
