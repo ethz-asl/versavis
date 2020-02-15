@@ -76,7 +76,7 @@ int16_t *VN100::readImuData() {
   clearBuffer();
   Serial1.print("$VNBOM,1*XX\r\n");
   const uint64_t local_tic = micros();
-  while (Serial1.available() < 30) {
+  while (Serial1.available() < kMessageLength) {
     if (micros() - local_tic < kImuSyncTimeoutUs / 2) {
       delayMicroseconds(1); // Wait until full message is received.
     } else {
@@ -85,8 +85,8 @@ int16_t *VN100::readImuData() {
       return nullptr;
     }
   }
-  size_t bytes = Serial1.readBytes(in_, 30);
-  if (bytes != 30) {
+  size_t bytes = Serial1.readBytes(in_, kMessageLength);
+  if (bytes != kMessageLength) {
     DEBUG_PRINTLN(topic_ + " (VN100.cpp): Not all data read (timeout?).");
     return nullptr;
   }
