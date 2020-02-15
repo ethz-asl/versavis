@@ -35,7 +35,8 @@
       <param name="frame_id" value="cam0" />
       <param name="serial" value="$(arg cam0_serial)" />
       <param name="acquisition_frame_rate_enable" value="false" />
-      <!-- param name="image_format_color_coding" value="BGR8" /-->
+      <param name="image_format_color_coding" value="BGR8" />
+      <param name="color_processing_algorithm" value="HQ_LINEAR" />
 
       <!-- Trigger related config -->
       <param name="acquisition_mode" value="Continuous" />
