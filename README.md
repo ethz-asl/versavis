@@ -8,9 +8,27 @@ An Open Versatile Multi-Camera Visual-Inertial Sensor Suite
 * [PointGrey/Flir](https://github.com/ethz-asl/flir_camera_driver/tree/devel/versavis) tested with Chameleon 3, Blackfly S
 * [CamBoard](https://github.com/ethz-asl/pico_flexx_driver/tree/devel/versavis) tested with CamBoard pico monstar
 
-## Some documentation
-[Paper](https://arxiv.org/abs/1912.02469) and [Presentation](https://docs.google.com/presentation/d/1Yi71cYtIBGUP5bFDKDFcUF2MjNS_CV3LM7W1_3jNLEs/edit?usp=sharing)
 
+## Citing
+
+Please cite the [following paper](https://www.mdpi.com/1424-8220/20/5/1439) when using VersaVIS for your research:
+
+```bibtex
+@article{Tschopp2020,
+author = {Tschopp, Florian and Riner, Michael and Fehr, Marius and Bernreiter, Lukas and Furrer, Fadri and Novkovic, Tonci and Pfrunder, Andreas and Cadena, Cesar and Siegwart, Roland and Nieto, Juan},
+doi = {10.3390/s20051439},
+journal = {Sensors},
+number = {5},
+pages = {1439},
+publisher = {Multidisciplinary Digital Publishing Institute},
+title = {{VersaVIS—An Open Versatile Multi-Camera Visual-Inertial Sensor Suite}},
+url = {https://www.mdpi.com/1424-8220/20/5/1439},
+volume = {20},
+year = {2020}
+}
+```
+
+Additional information can be found [here](https://docs.google.com/presentation/d/1Yi71cYtIBGUP5bFDKDFcUF2MjNS_CV3LM7W1_3jNLEs/edit?usp=sharing).
 ## Install
 
 ### Clone and build
