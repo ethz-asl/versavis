@@ -96,21 +96,21 @@ Main symptoms are:
 Troubleshooting steps:
 * Check that your camera receives a triggering signal by checking the trigger LED (Note: As the trigger pulse is very short, look for a dim flicker.).
 * Check that all topics are correctly set up and connected.
-* If the USB3 blackfly is powered over the Hirose plug, there seems to be a longer delay (0.2s+) until the image arrives on the host computer. Initialization does not succeed because it only allows successful synchronization if the image message is not older than 0.1s compared to the time message coming from the triggering board. With power over USB things seem to work fine. One can increase the threshold [kMaxImageDelayThreshold](https://github.com/ethz-asl/versavis_private/blob/c9f2ffad4f3ed9db04004d2098abf0c3c83e4923/versavis/src/versavis_synchronizer.cpp#L19) but keep in mind that `kMaxImageDelayThreshold >> 1/f_init`. Decrease initialization frequency [`f_init`](https://github.com/ethz-asl/versavis_private/blob/c9f2ffad4f3ed9db04004d2098abf0c3c83e4923/firmware/versavis/versavis.ino#L83) if necessairy.
+* If the USB3 blackfly is powered over the Hirose plug, there seems to be a longer delay (0.2s+) until the image arrives on the host computer. Initialization does not succeed because it only allows successful synchronization if the image message is not older than 0.1s compared to the time message coming from the triggering board. With power over USB things seem to work fine. One can increase the threshold [kMaxImageDelayThreshold](https://github.com/ethz-asl/versavis/blob/af83f34d4471a7886a197f305dbe76603b92747a/versavis/src/versavis_synchronizer.cpp#L20) but keep in mind that `kMaxImageDelayThreshold >> 1/f_init`. Decrease initialization frequency [`f_init`](https://github.com/ethz-asl/versavis/blob/af83f34d4471a7886a197f305dbe76603b92747a/firmware/versavis/versavis.ino#L87) if necessairy.
 
 ### The board is not doing what I expect / How can I enter debug mode
 Easiest way to debug is to enable `DEBUG` mode in `firmware/libraries/versavis/versavis_configuration.h` and check the debug output using the Arduino Serial Monitor or `screen /dev/versavis`.
 Note: In debug mode, ROS/rosserial communication is deactivated!
 ### I don't get any IMU messages on `/versavis/imu`
-This is normal during initialization as no IMU messages are published. Check [Inintialization issues](https://github.com/ethz-asl/versavis_private/blob/devel/open-source/README.md#my-sensor-is-stuck-at-initialization) for further info.
+This is normal during initialization as no IMU messages are published. Check [Inintialization issues](https://github.com/ethz-asl/versavis#my-sensor-is-stuck-at-initialization) for further info.
 ### After uploading a new firmware, I am unable to communicate with the VersaVIS board
 This is most likely due to an infinite loop in the code in an error case. Reset the board by double clicking the reset button and upload your code in `DEBUG` mode. Then check your debug output.
 ### IMU shows strange data or spikes
-To decrease the bandwidth between VersaVIS and host but keep all information, only the IMu raw data is transferred and later scaled. If there is a scale offset, adapt the [scale/sensitivity parameters](https://github.com/ethz-asl/versavis_private/blob/1b09b18efa273b71206aabb8ab74e4c3903b7d63/versavis/launch/run_versavis.launch#L141) in your launch file.
+To decrease the bandwidth between VersaVIS and host but keep all information, only the IMu raw data is transferred and later scaled. If there is a scale offset, adapt the [scale/sensitivity parameters](https://github.com/ethz-asl/versavis/blob/af83f34d4471a7886a197f305dbe76603b92747a/versavis/launch/run_versavis.launch#L140) in your launch file.
 
 Depending on the IMU, recursive data grabbing is implemented with a CRC or temperature check. If this fails multiple time, the latest message is used. Check your IMU if this persists.
 ### It looks like my exposure time is not correctly compensated
-Check whether your board can correctly detect your exposure time in the [debug output](https://github.com/ethz-asl/versavis_private/blob/devel/open-source/README.md#the-board-is-not-doing-what-i-expect--how-can-i-enter-debug-mode).
+Check whether your board can correctly detect your exposure time in the [debug output](https://github.com/ethz-asl/versavis#my-sensor-is-stuck-at-initialization).
 Troubleshooting steps:
 * Enable exposure/strobe output on your camera.
 * Check that all dip switches are set according to the [datasheet](https://drive.google.com/file/d/11QCjc5PVuMU9bAr8Kjvqz2pqVIhoMbHA/view?ts=5dc98776).
