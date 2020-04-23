@@ -3,7 +3,7 @@ VersaVIS provides a complete, open-source hardware, firmware and software bundle
 
 
 ## Supported camera drivers
-* [Basler](https://github.com/ethz-asl/ros_basler_camera/tree/devel/versavis) tested with acA1920-155uc
+* [Basler (not open-source)](https://github.com/ethz-asl/ros_basler_camera/tree/devel/versavis) tested with acA1920-155uc
 * [MatrixVision](https://github.com/ethz-asl/bluefox2/tree/devel/versavis) tested with Bluefox 2 MLC200WG, needs adaption for new format
 * [PointGrey/Flir](https://github.com/ethz-asl/flir_camera_driver/tree/devel/versavis) tested with Chameleon 3, Blackfly S
 * [CamBoard](https://github.com/ethz-asl/pico_flexx_driver/tree/devel/versavis) tested with CamBoard pico monstar
