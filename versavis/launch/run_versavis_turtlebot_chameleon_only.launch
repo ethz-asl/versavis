@@ -13,8 +13,8 @@
    <!-- Determine this using rosrun pointgrey_camera_driver list_cameras.
        If not specified, defaults to first camera found. -->
   <arg name="cam0_serial" default="16369103" />
-  <arg name="cam1_serial" default="25002526" />
-  <arg name="cam2_serial" default="25002519" />
+  <arg name="cam1_serial" default="tbd" />
+  <arg name="cam2_serial" default="tbd" />
   <arg name="calibrated" default="1" />
   <arg name="node_start_delay_cam0" default="0.0" />
   <arg name="node_start_delay_cam12" default="0.0" />
@@ -32,7 +32,7 @@
     <!-- camera driver nodelet -->
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load spinnaker_camera_driver/SpinnakerCameraNodelet $(arg camera_manager)"
-	  launch-prefix="bash -c 'sleep $(arg node_start_delay_cam0); $0 $@'" >
+          launch-prefix="bash -c 'sleep $(arg node_start_delay_cam0); $0 $@'" >
 
       <!-- The following params will be included from a seperate config file soon, this is just for a quick test -->
       <param name="frame_id" value="cam0" />
@@ -51,7 +51,7 @@
       <param name="exposure_auto" value="Continuous" />
       <!-- <param name="exposure_auto" value="Off" />
       <param name="exposure_time" value="6000" /> --> <!-- in microseconds -->
-      <param name="line_selector" value="Line1" />
+      <!--param name="line_selector" value="Line1" /-->
       <param name="line_mode" value="Output" />
       <param name="line_source" value="ExposureActive" />
       <param name="line_inverter" value="true"/>
@@ -74,79 +74,6 @@
       <param name="imu_offset_us" type="int" value="0"/>
     </node>
   </group>
-
-  <group ns="$(arg camera_name_mv)_$(arg camera_type)_1" >
-    <!-- nodelet manager -->
-    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
-          args="manager"
-          output="screen"
-          required="true" >
-       <param name="num_worker_threads" value="2" />
-    </node>
-    
-    <include file="$(find bluefox2)/launch/single_nodelet.launch">
-
-      <env name="LD_LIBRARY_PATH" value="/home/rigel/versavis_ws/devel/lib:/opt/ros/melodic/lib:/opt/mvIMPACT_Acquire/lib/x86_64:/opt/mvIMPACT_Acquire/Toolkits/expat/bin/x86_64/lib:/opt/mvIMPACT_Acquire/Toolkits/libudev/bin/x86_64/lib"/>
-      <arg name="device" value="$(arg cam1_serial)" />
-      <arg name="aec" value="1" />
-      <arg name="ctm" value="3" />
-      <arg name="cts" value="1" />
-      <arg name="expose_us" value="10000" />
-      <!--ERROR BECAUSE UNUSED ARGUMENTS [agc, expos_up_lim, expos_low_lim]>
-      <arg name="agc" value="1" /-->
-      <arg name="gain_db" value="0" />
-      <!--arg name="expose_lower_limit_us" value="0"/>
-      <arg name="expose_upper_limit_us" value="18000"/-->
-      <arg name="plugin" value="true"/>
-      <arg name="camera_name" value="$(arg camera_name_mv)_$(arg cam1_serial)"/>
-    </include>
-    <!-- camera driver nodelet -->
-    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam1"
-	    args="load versavis/VersaVISSynchronizerNodelet $(arg camera_manager)"
-          output="screen"
-          required="true">
-      <param name="driver_topic" type="string" value="/$(arg camera_name_mv)_$(arg camera_type)_1/image_numbered" />
-      <param name="versavis_topic" type="string" value="/versavis/cam1/" />
-      <param name="imu_offset_us" type="int" value="0"/>
-    </node>
-  </group>
-
-  <group ns="$(arg camera_name_mv)_$(arg camera_type)_2">
-    <!-- nodelet manager -->
-    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
-          args="manager"
-          output="screen"
-          required="true" >
-       <param name="num_worker_threads" value="2" />
-    </node>
-    
-    <include file="$(find bluefox2)/launch/single_nodelet.launch">
-      <env name="LD_LIBRARY_PATH" value="/home/rigel/versavis_ws/devel/lib:/opt/ros/melodic/lib:/opt/mvIMPACT_Acquire/lib/x86_64:/opt/mvIMPACT_Acquire/Toolkits/expat/bin/x86_64/lib:/opt/mvIMPACT_Acquire/Toolkits/libudev/bin/x86_64/lib"/>
-      <arg name="device" value="$(arg cam2_serial)" />
-      <arg name="aec" value="1" />
-      <arg name="ctm" value="3" />
-      <arg name="cts" value="1" />
-      <arg name="expose_us" value="10000" />
-      <!--ERROR BECAUSE UNUSED ARGUMENTS [agc, expos_up_lim, expos_low_lim]>
-      <arg name="agc" value="1" /-->
-      <arg name="gain_db" value="0" />
-      <!--arg name="expose_lower_limit_us" value="0"/>
-      <arg name="expose_upper_limit_us" value="18000"/-->
-      <arg name="plugin" value="true"/>
-      <arg name="camera_name" value="$(arg camera_name_mv)_$(arg cam2_serial)"/>
-    </include>
-    <!-- camera driver nodelet -->
-    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam2"
-	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
-          output="screen"
-          required="true">
-      <param name="driver_topic" type="string" value="/$(arg camera_name_mv)_$(arg camera_type)_2/image_numbered" />
-      <param name="versavis_topic" type="string" value="/versavis/cam2/" />
-      <param name="imu_offset_us" type="int" value="0"/>
-    </node>
-  </group>
-
-  
  
   <!-- Run VersaVIS link. -->
   <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
@@ -160,7 +87,7 @@
   <node name="versavis_imu_receiver" pkg="versavis"
       type="versavis_imu_receiver" required="true" output="screen">
     <!-- ADIS16640 parameters -->
-    <param name="imu_accelerator_sensitivity"           value="0.00025" /> <!-- Assuming 16bit data format -->
+    <param name="imu_accelerator_sensitivity"           value="0.00025" />
     <param name="imu_gyro_sensitivity"                  value="0.005" />
     <param name="imu_acceleration_covariance"           value="0.043864908" /> <!-- no idea where it is from -->
     <param name="imu_gyro_covariance"                   value="6e-9" /> <!-- no idea where it is from -->
