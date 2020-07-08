@@ -1,5 +1,5 @@
 // Import all settings for the chosen sensor configuration.
-#include "versavis_configuration.h"
+#include "versavis_configuration_Rosi.h"
 
 #include <math.h>
 #include <ros.h>
@@ -45,6 +45,7 @@ ros::Subscriber<std_msgs::UInt8> pwm_sub("/versavis/illumination_pwm", &pwmCb);
 Timer timer_cam0 = Timer((Tcc *)TCC0);
 Timer timer_cam1 = Timer((Tcc *)TCC1);
 Timer timer_cam2 = Timer((TcCount16 *)TC3);
+Timer timer_cam3 = Timer((TcCount16 *)TC4); // from datasheet
 Timer timer_imu = Timer((TcCount16 *)TC5);
 
 /* ----- IMU ----- */
@@ -67,6 +68,10 @@ Camera cam1(&nh, CAM1_TOPIC, CAM1_RATE, timer_cam1, CAM1_TYPE, CAM1_TRIGGER_PIN,
             CAM1_EXPOSURE_PIN, true);
 Camera cam2(&nh, CAM2_TOPIC, CAM2_RATE, timer_cam2, CAM2_TYPE, CAM2_TRIGGER_PIN,
             CAM2_EXPOSURE_PIN, true);
+Camera cam3(&nh, CAM3_TOPIC, CAM3_RATE, timer_cam3, CAM3_TYPE, CAM3_TRIGGER_PIN,
+            CAM3_EXPOSURE_PIN, true);
+//Camera cam4(&nh, CAM4_TOPIC, CAM4_RATE, timer_cam4, CAM4_TYPE, CAM4_TRIGGER_PIN,
+//            CAM4_EXPOSURE_PIN, true);
 
 void setup() {
   DEBUG_INIT(115200);
@@ -106,14 +111,18 @@ void setup() {
   cam0.setup();
   cam1.setup();
   cam2.setup();
+  cam3.setup();
+//  cam4.setup();
 
   /* ----- Initialize all connected cameras. ----- */
   while (!cam0.isInitialized() || !cam1.isInitialized() ||
-         !cam2.isInitialized()) {
+         !cam2.isInitialized() || !cam3.isInitialized()) {
     DEBUG_PRINTLN(F("Main: Initializing."));
     cam0.initialize();
     cam1.initialize();
     cam2.initialize();
+    cam3.initialize();
+//    cam4.initialize();
 
 #ifndef DEBUG
     nh.spinOnce();
@@ -135,23 +144,35 @@ void setup() {
     ; // wait for sync
   }
 
-  // Enable TC4 (not used) and TC5 timers.
+  // Enable TC4 and TC5 timers.
   REG_GCLK_CLKCTRL = static_cast<uint16_t>(
       GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TC4_TC5);
   while (GCLK->STATUS.bit.SYNCBUSY == 1) {
     ; // wait for sync
   }
 
+  // Enable TC6 and TC7 timers.
+  //REG_GCLK_CLKCTRL = static_cast<uint16_t>(
+  //    GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TC6_TC7);
+  //while (GCLK->STATUS.bit.SYNCBUSY == 1) {
+  //  ; // wait for sync
+  //}
+
   // enable InterruptVector.
   NVIC_EnableIRQ(TCC0_IRQn);
   NVIC_EnableIRQ(TCC1_IRQn);
+  //NVIC_EnableIRQ(TCC2_IRQn);
   NVIC_EnableIRQ(TC3_IRQn);
+  NVIC_EnableIRQ(TC4_IRQn);
   NVIC_EnableIRQ(TC5_IRQn);
+  //NVIC_EnableIRQ(TC6_IRQn);
 
   imu.begin();
   cam0.begin();
   cam1.begin();
   cam2.begin();
+  cam3.begin();
+  //cam4.begin();
 
   /* ----- Interrupt for measuring the exposure time. ----- */
   noInterrupts(); // Disable interrupts to configure them --> delay()'s
@@ -164,6 +185,10 @@ void setup() {
                   FALLING);
   attachInterrupt(digitalPinToInterrupt(cam2.exposurePin()), exposureEnd2,
                   FALLING);
+  attachInterrupt(digitalPinToInterrupt(cam3.exposurePin()), exposureEnd3,
+                  FALLING);
+//  attachInterrupt(digitalPinToInterrupt(cam4.exposurePin()), exposureEnd4,
+//                  FALLING);
   interrupts();
 
   DEBUG_PRINTLN(F("Main: Setup done."));
@@ -173,6 +198,8 @@ void loop() {
   cam0.publish();
   cam1.publish();
   cam2.publish();
+  cam3.publish();
+  //cam4.publish();
   imu.publish();
 
 #ifndef DEBUG
@@ -188,9 +215,21 @@ void TCC1_Handler() { // Called by cam1_timer for camera 1 trigger.
   cam1.triggerMeasurement();
 }
 
+//void TCC2_Handler() { // Called by cam4_timer for camera 4 trigger.
+//  cam4.triggerMeasurement();
+//}
+
 void TC3_Handler() { // Called by cam2_timer for camera 2 trigger.
   cam2.triggerMeasurement();
 }
+
+void TC4_Handler() { // Called by cam3_timer for camera 3 trigger.
+  cam3.triggerMeasurement();
+}
+
+//void TC6_Handler() { // Called by cam4_timer for camera 4 trigger.
+//  cam4.triggerMeasurement();
+//}
 
 void TC5_Handler() { // Called by imu_timer for imu trigger.
   imu.triggerMeasurement();
@@ -225,3 +264,11 @@ void exposureEnd2() {
   }
 #endif
 }
+
+void exposureEnd3() {
+  cam3.exposureEnd();
+}
+
+//void exposureEnd4() {
+//  cam4.exposureEnd();
+//}
