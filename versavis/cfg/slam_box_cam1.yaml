@@ -1,0 +1,119 @@
+#  The tf frame under which the images were published
+camera_frame: pylon_camera_cam1_right # Right camera
+
+#  The DeviceUserID of the camera. If empty, the first camera found in the
+#  device list will be used
+device_user_id: "cam1_right" # "23186227" 
+
+#  The CameraInfo URL (Uniform Resource Locator) where the optional intrinsic
+#  camera calibration parameters are stored. This URL string will be parsed
+#  from the ROS-CameraInfoManager:
+#  http://docs.ros.org/api/camera_info_manager/html/classcamera__info__manager_
+#  1_1CameraInfoManager.html#details
+camera_info_url: ""
+
+#  The encoding of the pixels -- channel meaning, ordering, size
+#  taken from the list of strings in include/sensor_msgs/image_encodings.h
+#  The supported encodings are 'mono8', 'bgr8', 'rgb8', 'bayer_bggr8',
+#  'bayer_gbrg8' and 'bayer_rggb8'
+#  Default values are 'mono8' and 'rgb8'
+image_encoding: "bayer_rggb8"
+
+#  Binning factor to get downsampled images. It refers here to any camera
+#  setting which combines rectangular neighborhoods of pixels into larger
+#  "super-pixels." It reduces the resolution of the output image to
+#  (width / binning_x) x (height / binning_y).
+#  The default values binning_x = binning_y = 0 are considered the same
+#  as binning_x = binning_y = 1 (no subsampling).
+# binning_x: 1
+# binning_y: 1
+
+#  The desired publisher frame rate if listening to the topics.
+#  This parameter can only be set once at startup
+#  Calling the GrabImages-Action can result in a higher framerate
+frame_rate: 20.0
+
+#  Mode of camera's shutter.
+#  The supported modes are "rolling", "global" and "global_reset"
+#  Default value is "" (empty) means default_shutter_mode
+shutter_mode: "global"
+
+##########################################################################
+######################## Image Intensity Settings ########################
+##########################################################################
+# The following settings do *NOT* have to be set. Each camera has default
+# values which provide an automatic image adjustment resulting in valid
+# images
+##########################################################################
+
+#  The exposure time in microseconds to be set after opening the camera.
+# exposure: 10000.0
+
+#  The target gain in percent of the maximal value the camera supports
+#  For USB-Cameras, the gain is in dB, for GigE-Cameras it is given in so
+#  called 'device specific units'.
+# gain: 0.5
+
+#  Gamma correction of pixel intensity.
+#  Adjusts the brightness of the pixel values output by the camera's sensor
+#  to account for a non-linearity in the human perception of brightness or
+#  of the display system (such as CRT).
+# gamma: 1.0
+
+#  The average intensity value of the images. It depends the exposure time
+#  as well as the gain setting. If 'exposure' is provided, the interface will
+#  try to reach the desired brightness by only varying the gain. (What may
+#  often fail, because the range of possible exposure vaules is many
+#  times higher than the gain range). If 'gain' is provided, the interface will
+#  try to reach the desired brightness by only varying the exposure time. If
+#  gain AND exposure are given, it is not possible to reach the brightness,
+#  because both are assumed to be fix.
+# brightness: 100
+
+#  Only relevant, if 'brightness' is set:
+#  The brightness_continuous flag controls the auto brightness function.
+#  If it is set to false, the brightness will only be reached once.
+#  Hence changing light conditions lead to changing brightness values.
+#  If it is set to true, the given brightness will be reached continuously,
+#  trying to adapt to changing light conditions. This is only possible for
+#  values in the possible auto range of the pylon API which is e.g. [50 - 205]
+#  for acA2500-14um and acA1920-40gm
+# brightness_continuous: true
+
+#  Only relevant, if 'brightness' is set:
+#  If the camera should try to reach and / or keep the brightness, hence
+#  adapting to changing light conditions, at least one of the following flags
+#  must be set.
+#  If both are set, the interface will use the profile that tries to keep the
+#  gain at minimum to reduce white noise.
+#  The exposure_auto flag indicates, that the desired brightness will be
+#  reached by adapting the exposure time.
+#  The gain_auto flag indicates, that the desired brightness will be
+#  reached by adapting the gain.
+# exposure_auto: true
+# gain_auto: true
+
+##########################################################################
+
+#  The timeout while searching the exposure which is connected to the
+#  desired brightness. For slow system this has to be increased.
+# exposure_search_timeout: 5.0
+
+#  The exposure search can be limited with an upper bound. This is to prevent
+#  very high exposure times and resulting timeouts.
+#  A typical value for this upper bound is ~2000000us.
+# auto_exposure_upper_limit: 2000000.0
+
+#  The MTU size. Only used for GigE cameras.
+#  To prevent lost frames configure the camera has to be configured
+#  with the MTU size the network card supports. A value greater 3000
+#  should be good (1500 for RaspberryPI)
+# gige:
+#  mtu_size: 3000
+
+#  Only used for GigE cameras.
+#  The inter-package delay in ticks to prevent lost frames.
+#  For most of GigE-Cameras, a value of 1000 is reasonable.
+#  For cameras used on a RaspberryPI this value should be set to 11772.
+# gige:
+#  inter_pkg_delay: 1000

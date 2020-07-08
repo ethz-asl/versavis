@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+  <arg name="name" default="cam_hires" />
+  <arg name="cam_id_type" default="serial" />
+  <arg name="cam_id_value" default="" />
+  <arg name="frame" default="$(arg name)_camera_link" />
+  <arg name="exposure_auto" default="Continious" />
+  <arg name="exposure_mode" default="Timed" />
+
+  <group ns="$(arg name)">
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" respawn="true"/>
+    <param name="manager" value="nodelet_manager" />
+    <arg name="manager" value="nodelet_manager" />
+
+    <include file="$(find rb_pylon_camera)/launch/image_proc_unpacked.launch">
+      <arg name="manager" value="nodelet_manager" />
+    </include>
+
+    <group ns="image_rect_color">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+   </group>
+
+    <group ns="image_unpacked">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+
+    <group ns="image_raw">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+
+    <group ns="image_mono">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+
+    <group ns="image_color">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+
+    <group ns="image_rect_color">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+
+    <group ns="image_rect">
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressed'
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+  </group>
+
+  <!-- for paremeters and possible options check "rb_pylon_camer/cfg/RBPylonCamera.cfg enumerators" and "src/configuration.cpp"-->
+  <node name="$(arg name)" pkg="rb_pylon_camera" type="rb_pylon_camera_node" respawn="true" respawn_delay="2">
+    <param name="identifier/type" value="$(arg cam_id_type)" />
+    <param name="identifier/value" value="$(arg cam_id_value)" type="string" />
+
+    <param name="camera_info_url" value=""/>
+
+    <param name="frame_id" value="$(arg frame)"/>
+
+    <param name="pixel_format" value="BayerRG8" />
+    <param name="acquisition_mode" value="Continuous" /> 
+    <param name="acquisition_rate" value="60" />
+    <param name="acquisition_rate_limiting" value="True" />
+    <param name="S_trigger_frame_start_source" value="Line1" />
+    <param name="S_trigger_frame_start_mode" value="On" />
+    <param name="S_trigger_frame_start_activation" value="RisingEdge" />
+
+    <param name="S_line2_source" value="Exposing" />
+    <param name="S_line2_invert" value="True" /> <!--True/False-->
+
+    <param name="offset_x" value="0" />
+    <param name="offset_y" value="0" />
+    <param name="width" value="0" />
+    <param name="height" value="0" />
+    <param name="binning_x" value="1" />
+    <param name="binning_y" value="1" />
+    <param name="decimation_x" value="1" />
+    <param name="decimation_x" value="1" />
+
+    <param name="brightness_auto_target" value=".2" />
+    <param name="auto_function_profile" value="MinimizeExposureTime" />
+
+    <param name="exposure_auto" value="$(arg exposure_auto)" />
+    <param name="exposure_mode" value="$(arg exposure_mode)" />
+    <param name="exposure_auto_min" value="170" />
+    <param name="exposure_auto_max" value="19000" />
+    
+    <param name="gain_auto" value="Continuous" />
+    <param name="gain_auto_min" value="0" />
+    <param name="gain_auto_max" value="20" />
+    <param name="whitebalance_auto" value="True" />
+    <param name="S_balance_ratio_red_abs" value="1" />
+    <param name="S_balance_ratio_green_abs" value="1" />
+    <param name="S_balance_ratio_blue_abs" value="1" />
+  </node>
+</launch>

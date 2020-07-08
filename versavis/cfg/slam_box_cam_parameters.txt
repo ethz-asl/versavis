@@ -1,0 +1,44 @@
+Using Camera UserSetControl. Set via Pylon Viewer and saved there in camera.
+Opened via rosservice call upon launch
+
+
+Parameters for Master (cam0)
+    UserSetSelector: "User Set 1"
+    UserSetDefault: "User Set 1"
+    ExposureAuto: "Continuous"
+    ExposureMode: "Timed"
+    ExposureTime: 1000.0
+    AcquisitionFrameRateEnable: "0"
+    AutoExposureTimeLowerLimit: 300.0
+    AutoExposureTimeUpperLimit: 19000.0
+    AutoTargetBrightness: 0.33
+    GainAuto: "Continuous"
+    BalanceWhiteAuto: "Continuous"
+    TriggerMode: "On"
+    TriggerSource: "Line1"
+    LineSelector: "Line2"
+    LineMode: "Output"
+    LineSource: "ExposureActive"
+    LineInverter: True
+
+Parameters for Slave (cam1)
+! True slave mode not possible, since pylon_camera_node driver doesn't support setting trigger mode (Trigger Width)!
+    UserSetSelector: "User Set 1"
+    UserSetDefault: "User Set 1"
+    ExposureAuto: "On"              #should be "Off" for Trigger Width activation (true slave mode)
+    ExposureMode: "TriggerWidth"    #gets disabled at start of ros driver (defaults to "Timed")
+    ExposureTime: 1000.0
+    AcquisitionFrameRateEnable: "0"
+    AutoExposureTimeLowerLimit: 300.0
+    AutoExposureTimeUpperLimit: 19000.0
+    AutoTargetBrightness: 0.33
+    GainAuto: "Continuous"
+    BalanceWhiteAuto: "Continuous"
+    TriggerMode: "On"
+    TriggerSource: "Line1"
+    LineSelector: "Line4"
+    LineMode: "Output"
+    LineSource: "ExposureActive"
+    LineInverter: True
+
+Solution: Both cameras with Exposure Auto

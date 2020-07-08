@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <arg name="machinename" value="$(optenv HOSTNAME highrescams)"/>
+    <arg name="wstool_ws" value="~/catkin_ws/src" />
+    <arg name="hostname" value="$(eval machinename.replace('-', '_'))" />
+    <arg name='basepath' default='/data/measurements'/>
+    <arg name='dirname' default="$(find versavis)"/>
+
+
+   <!-- camera name prefix -->
+  <arg name="camera_name"        default="ACE" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Camera Parameters for pylon_camera_node copied from pylon_camera/launch/pylon_camera_node.launch -->
+  <arg name="respawn" default="false" />
+  <arg name="debug" default="false" />
+  <arg name="node_name" default="pylon_camera_node" />
+  <arg name="mtu_size" default="1500" />
+  <arg name="startup_user_set" default="CurrentSetting" />
+  <arg name="enable_status_publisher" default="true" />
+  <arg name="enable_current_params_publisher" default="true" />
+  <arg name="config_file_cam0" default="$(find versavis)/cfg/slam_box_cam0.yaml" />
+  <arg name="config_file_cam1" default="$(find versavis)/cfg/slam_box_cam1.yaml" />
+  <?ignore
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args" />
+  <arg name="launch_prefix_0" value="" />
+  <arg name="launch_prefix_1" value="" />
+  \?>
+  <arg name="launch_prefix_0" value="$(find versavis)/launch/set_trigger_cam0.sh" />
+  <arg name="launch_prefix_1" value="$(find versavis)/launch/set_trigger_cam1.sh" />
+
+    <!-- Sensors -->
+    <group ns="pylon_camera" >
+        <include file="$(find versavis)/launch/rb_pylon.launch">
+            <arg name="name" value="cam0_left" />
+            <arg name="cam_id_value" value="23057654" />
+            <param name="camera_info_url" value="$(find versavis)/cfg"/>
+        </include>
+
+        <include file="$(find versavis)/launch/rb_pylon.launch">
+            <arg name="name" value="cam1_right" />
+            <arg name="cam_id_value" value="23186227" />
+            <param name="camera_info_url" value="$(find versavis)/cfg"/>
+        </include>
+    </group>
+</launch>

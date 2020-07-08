@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!-- camera name prefix -->
+  <arg name="camera_name"        default="ACE" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Camera Parameters for pylon_camera_node copied from pylon_camera/launch/pylon_camera_node.launch -->
+  <arg name="respawn" default="false" />
+  <arg name="debug" default="false" />
+  <arg name="node_name" default="pylon_camera_node" />
+  <arg name="mtu_size" default="1500" />
+  <arg name="startup_user_set" default="CurrentSetting" />
+  <arg name="enable_status_publisher" default="true" />
+  <arg name="enable_current_params_publisher" default="true" />
+  <arg name="config_file_cam0" default="$(find versavis)/cfg/slam_box_cam0.yaml" />
+  <arg name="config_file_cam1" default="$(find versavis)/cfg/slam_box_cam1.yaml" />
+  <?ignore
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args" />
+  <arg name="launch_prefix_0" value="" />
+  <arg name="launch_prefix_1" value="" />
+  \?>
+  <arg name="launch_prefix_0" value="$(find versavis)/launch/set_trigger_cam0.sh" />
+  <arg name="launch_prefix_1" value="$(find versavis)/launch/set_trigger_cam1.sh" />
+  <!-- camera nodelet system -->
+
+    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
+          args="manager"
+          output="screen"
+          required="true" >
+       <param name="num_worker_threads" value="4" />
+    </node>
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_1" >
+    <!-- nodelet manager -->
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="$(arg node_name)"
+	    args="load pylon_camera/PylonCameraNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+        <rosparam command="load" file="$(arg config_file_cam1)" />
+        <param name="gige/mtu_size" value="$(arg mtu_size)"/>
+        <param name="startup_user_set" value="$(arg startup_user_set)"/>
+        <param name="enable_status_publisher" value="$(arg enable_status_publisher)"/>
+        <param name="enable_current_params_publisher" value="$(arg enable_current_params_publisher)"/>
+    </node>
+    <?ignore
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam1"
+	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+      <param name="driver_topic" type="string" value="$(arg node_name)/image_numbered" />
+      <param name="versavis_topic" type="string" value="/versavis/cam1/" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+    \?>
+  </group>
+
+</launch>
