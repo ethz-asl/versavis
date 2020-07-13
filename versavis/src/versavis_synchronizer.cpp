@@ -16,7 +16,7 @@ namespace versavis {
 VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
                                            const ros::NodeHandle &nh_private)
     : nh_(nh), nh_private_(nh_private), image_transport_(nh),
-      kMaxImageCandidateLength(10), kMinSuccessfullConsecutiveMatches(4),
+      kMaxImageCandidateLength(50), kMinSuccessfullConsecutiveMatches(4),
       kMaxImageDelayThreshold(0.1),
       slow_publisher_image_counter_(0),
       kSlowPublisherImageCounterThreshold(10), init_number_(0),

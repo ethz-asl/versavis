@@ -160,10 +160,14 @@ void setup() {
   DEBUG_PRINTLN(F("Main: Attach interrupts."));
   attachInterrupt(digitalPinToInterrupt(cam0.exposurePin()), exposureEnd0,
                   FALLING);
+
+  /* Deactivate for thermal only 
+   *  
   attachInterrupt(digitalPinToInterrupt(cam1.exposurePin()), exposureEnd1,
                   FALLING);
   attachInterrupt(digitalPinToInterrupt(cam2.exposurePin()), exposureEnd2,
                   FALLING);
+  */
   interrupts();
 
   DEBUG_PRINTLN(F("Main: Setup done."));
