@@ -31,7 +31,7 @@
       <arg name="name" value="cam0_left" />
       <arg name="cam_id_value" value="23057654" />
       <arg name="exposure_auto" value="Continuous" />
-      <param name="camera_info_url" value="$(find versavis)/cfg"/>
+      <arg name="S_trigger_frame_start_mode" value="On" />
     </include>
     <node name="compile_nodelet_cam0" pkg="versavis" type="versavis_synchronizer_node"
           required="true" output="screen">
@@ -47,7 +47,7 @@
       <arg name="cam_id_value" value="23186227"  />
       <arg name="exposure_auto" value="Continuous" />
       <!--arg name="exposure_mode" value="TriggerWidth" /-->
-      <param name="camera_info_url" value="$(find versavis)/cfg"/>
+      <arg name="S_trigger_frame_start_mode" value="On" />
     </include>
     <node name="compile_nodelet_cam0" pkg="versavis" type="versavis_synchronizer_node"
           required="true" output="screen">

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+  <!-- Launch file for cameras without versavis / time synchronization / imu data -->
+
+<launch>
+   <!-- camera name prefix -->
+  <arg name="camera_name"        default="pylon_camera" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Camera Parameters for pylon_camera_node copied from pylon_camera/launch/pylon_camera_node.launch -->
+  <arg name="respawn" default="false" />
+  <arg name="debug" default="false" />
+  <arg name="mtu_size" default="1500" />
+  <arg name="startup_user_set" default="CurrentSetting" />
+  <arg name="enable_status_publisher" default="true" />
+  <arg name="enable_current_params_publisher" default="true" />
+  <arg name="config_file_cam0" default="$(find versavis)/cfg/slam_box_cam0.yaml" />
+  <arg name="config_file_cam1" default="$(find versavis)/cfg/slam_box_cam1.yaml" />
+  <arg name="exposure_mode" default="Timed" />
+  <arg name="S_trigger_frame_start_mode" Default="Off" />
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_0" >
+    <include file="$(find versavis)/launch/rb_pylon.launch">
+      <arg name="name" value="cam0_left" />
+      <arg name="cam_id_value" value="23057654" />
+      <arg name="exposure_auto" value="Continuous" />
+      <arg name="S_trigger_frame_start_mode" value="Off" />
+    </include>
+  </group>
+  
+  <group ns="$(arg camera_name)_$(arg camera_type)_1" >
+    <include file="$(find versavis)/launch/rb_pylon.launch">
+      <arg name="name" value="cam1_right" />
+      <arg name="cam_id_value" value="23186227"  />
+      <arg name="exposure_auto" value="Continuous" />      
+      <arg name="S_trigger_frame_start_mode" value="Off" />
+      <!--arg name="exposure_mode" value="TriggerWidth" /-->
+    </include>
+  </group>
+</launch>

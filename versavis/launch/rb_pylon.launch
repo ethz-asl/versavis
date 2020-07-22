@@ -6,6 +6,8 @@
   <arg name="frame" default="$(arg name)_camera_link" />
   <arg name="exposure_auto" default="Continious" />
   <arg name="exposure_mode" default="Timed" />
+  <arg name="S_trigger_frame_start_mode" Default="On" />
+
 
   <group ns="$(arg name)">
     <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" respawn="true"/>
@@ -87,7 +89,7 @@
     <param name="acquisition_rate" value="60" />
     <param name="acquisition_rate_limiting" value="True" />
     <param name="S_trigger_frame_start_source" value="Line1" />
-    <param name="S_trigger_frame_start_mode" value="On" />
+    <param name="S_trigger_frame_start_mode" value="$(arg S_trigger_frame_start_mode)" />
     <param name="S_trigger_frame_start_activation" value="RisingEdge" />
 
     <param name="S_line2_source" value="Exposing" />
