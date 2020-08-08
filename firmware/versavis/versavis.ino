@@ -15,6 +15,8 @@
 #include <ADIS16448BMLZ.h>
 #elif defined(USE_ADIS16460)
 #include <ADIS16460.h>
+#elif defined(USE_VN100)
+#include <VN100.h>
 #endif
 #include <Camera.h>
 #ifdef EXT_EVENT
@@ -57,6 +59,8 @@ ADIS16448AMLZ imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
 ADIS16448BMLZ imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
 #elif defined(USE_ADIS16460)
 ADIS16460 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
+#elif defined(USE_VN100)
+VN100 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu);
 #endif
 
 /* ----- Cameras ----- */
