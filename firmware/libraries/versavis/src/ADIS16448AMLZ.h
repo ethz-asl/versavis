@@ -123,11 +123,11 @@ public:
   void updateCRC(unsigned int *crc, unsigned int *data,
                  const unsigned int &POLY);
 
-  // Update data internally with recursion.
-  void updateDataRecursive(const unsigned int depth);
+  // Update data internally with validity checks.
+  bool updateDataIterative();
 
   // Update data withoput recursion.
-  void updateData();
+  bool updateData();
 
 private:
   // Variables to store hardware pin assignments.

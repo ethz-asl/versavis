@@ -465,16 +465,32 @@ float ADIS16448BMLZ::magnetometerScale(int16_t sensorData) {
 // Method to update the sensor data without any validity checks (may result in
 // spikes).
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16448BMLZ::updateData() { sensor_data_ = sensorReadAllCRC(); }
+bool ADIS16448BMLZ::updateData() {
+  sensor_data_ = sensorReadAllCRC();
+  return sensor_data_ != nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16448BMLZ::updateDataRecursive(const unsigned int depth) {
-  sensor_data_ = sensorReadAllCRC();
-  if (sensor_data_[12] != checksum(sensor_data_) &&
-      depth < max_recursive_update_depth_) {
-    updateDataRecursive(depth + 1);
+bool ADIS16448BMLZ::updateDataIterative() {
+  uint64_t tic = micros();
+  bool success = false;
+  for (size_t depth = 0; depth < kMaxRecursiveUpdateDepth; ++depth) {
+    Sensor::setTimestampNow();
+    sensor_data_ = sensorReadAllCRC();
+    if (sensor_data_ == nullptr || sensor_data_[12] != checksum(sensor_data_)) {
+      if (micros() - tic > kImuSyncTimeoutUs) {
+        return false;
+      }
+      DEBUG_PRINTLN(
+          topic_ +
+          " (ADIS16448BMLZ.cpp): Failed IMU update detected, trying again " +
+          (String)(kMaxRecursiveUpdateDepth - depth) + " times.");
+    } else {
+      return true;
+    }
   }
+  return false;
 }

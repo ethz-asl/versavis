@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!-- camera name prefix -->
+  <arg name="camera_name"             default="BFS" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Determine this using rosrun pointgrey_camera_driver list_cameras.
+       If not specified, defaults to first camera found. -->
+  <arg name="cam0_serial" default="19129161" />
+  <arg name="calibrated" default="1" />
+  <arg name="node_start_delay_cam0" default="0.0" />
+  <!-- camera nodelet system -->
+
+    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
+          args="manager"
+          output="screen"
+          required="true" >
+       <param name="num_worker_threads" value="4" />
+    </node>
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_0" >
+    <!-- nodelet manager -->
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+          args="load spinnaker_camera_driver/SpinnakerCameraNodelet /$(arg camera_manager)"
+          launch-prefix="bash -c 'sleep $(arg node_start_delay_cam0); $0 $@'" >
+
+      <!-- The following params will be included from a seperate config file soon, this is just for a quick test -->
+      <param name="frame_id" value="cam0" />
+      <param name="serial" value="$(arg cam0_serial)" />
+      <param name="acquisition_frame_rate_enable" value="false" />
+      <param name="image_format_color_coding" value="BGR8" />
+      <param name="color_processing_algorithm" value="HQ_LINEAR" />
+
+      <!-- Trigger related config -->
+      <param name="acquisition_mode" value="Continuous" />
+      <param name="trigger_source" value="Line0" /> <!-- Pin 2 -->
+      <param name="enable_trigger" value="On" />
+      <param name="trigger_activation_mode" value="RisingEdge" />
+
+      <!-- Exposure related config -->
+      <param name="exposure_mode" value="Timed" />
+      <param name="exposure_auto" value="Continuous" />
+      <!-- <param name="exposure_auto" value="Off" />
+      <param name="exposure_time" value="6000" /> --> <!-- in microseconds -->
+      <param name="line_selector" value="Line2" />
+      <param name="line_mode" value="Output" />
+      <param name="line_source" value="ExposureActive" />
+      <param name="line_inverter" value="false"/>
+      <param name="auto_exposure_time_upper_limit" value="5000" />
+      <param name="auto_exposure_time_lower_limit" value="300" />
+
+
+      <!-- Analog related config -->
+      <!-- <param name="auto_gain" value="Off" />
+      <param name="gain" value="5" /> -->
+      <param name="auto_gain" value="Continuous" />
+      <param name="auto_white_balance" value="Continuous" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
+	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+      <param name="driver_topic" type="string" value="/$(arg camera_name)_$(arg camera_type)_0/image_numbered" />
+      <param name="versavis_topic" type="string" value="/versavis/cam0/" />
+      <param name="imu_offset_us" type="int" value="0"/>
+    </node>
+  </group>
+
+
+  <!-- Relay publish chameleon3 camera_info topic as versavis. -->
+  <node name="relay0" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_0/camera_info /versavis/cam0/camera_info" required="true" output="screen"/>
+  <node name="relay1" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_1/camera_info /versavis/cam1/camera_info" required="true" output="screen"/>
+
+  <!-- Run VersaVIS link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/versavis _baud:=250000" respawn="true" output="screen" />
+
+  <!-- Reset VersaVIS with ros message -->
+  <node pkg="rostopic" type="rostopic" name="resetter"
+    args="pub /versavis/reset std_msgs/Bool false --once" output="screen" />
+
+  <!-- Recieve IMU message. -->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" required="true" output="screen">
+    <!-- VN100 parameters -->
+    <param name="imu_accelerator_sensitivity"           value="0.00025" />
+    <param name="imu_gyro_sensitivity"                  value="0.05" />
+    <param name="imu_sub_topic"           type="string" value="/versavis/imu_micro"/>
+  </node>
+
+  <!-- Dynamic reconfigure. -->
+  <!-- <node name="reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" /> -->
+
+</launch>
