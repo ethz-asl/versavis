@@ -37,9 +37,9 @@
 #endif
 
 /* ----- IMU -----*/
-// Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ and
-// USE_ADIS16460
-#define USE_ADIS16460
+// Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ,
+// USE_ADIS16460 and USE_VN100
+#define USE_ADIS16448BMLZ
 #define IMU_TOPIC "/versavis/imu_micro"
 #define IMU_RATE 200
 
@@ -58,6 +58,7 @@
 #define ILLUMINATION_PIN 26
 #endif
 
+
 /* ----- Aerotenna uLanding ----- */
 // Activation of a uLanding on UART.
 // #define USE_U_LANDING
@@ -75,7 +76,9 @@
 #define LIDAR_LITE_RATE 20
 #endif
 
-/* ----- Debug prints. ----- */
+
+/* ----- Debug mode. ----- */
+
 // Define whether debug mode should be used. This provides output on the
 // standard console but invalidates ROS communication.
 // #define DEBUG
