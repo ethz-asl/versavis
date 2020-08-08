@@ -5,13 +5,14 @@
 
 Imu::Imu(ros::NodeHandle *nh, const String &topic, const int rate_hz,
          Timer &timer)
-    : Sensor(nh, topic, rate_hz, timer, imu_msg_),
-      max_recursive_update_depth_(10u) {}
+    : Sensor(nh, topic, rate_hz, timer, imu_msg_), kMaxRecursiveUpdateDepth(5u),
+      kImuSyncTimeoutUs(4000) {}
 
 void Imu::triggerMeasurement() {
   // Check whether an overflow caused the interrupt.
   if (!timer_.checkOverflow()) {
-    DEBUG_PRINTLN((topic_ + " (Imu.cpp): Timer interrupt but not overflown.").c_str());
+    DEBUG_PRINTLN(
+        (topic_ + " (Imu.cpp): Timer interrupt but not overflown.").c_str());
     return;
   }
 
@@ -30,25 +31,31 @@ void Imu::triggerMeasurement() {
 void Imu::publish() {
   if (Sensor::isNewMeasurementAvailable()) {
     DEBUG_PRINTLN((topic_ + " (Imu.cpp): Publish."));
+    bool success;
 #ifdef DEBUG
-    updateData();
+    success = updateDataIterative();
 #else
-    updateDataRecursive(0u);
+    success = updateDataIterative();
 #endif
-    imu_msg_.time.data = Sensor::getTimestamp();
-    if (sensor_data_ == nullptr) {
-      error((topic_ + " (Imu.cpp): sensor_data == nullptr").c_str(), 10);
-    }
-    imu_msg_.gx = sensor_data_[ImuReading::GX];
-    imu_msg_.gy = sensor_data_[ImuReading::GY];
-    imu_msg_.gz = sensor_data_[ImuReading::GZ];
-    imu_msg_.ax = sensor_data_[ImuReading::AX];
-    imu_msg_.ay = sensor_data_[ImuReading::AY];
-    imu_msg_.az = sensor_data_[ImuReading::AZ];
+    if (!success) {
+      Sensor::newMeasurementIsNotAvailable();
+      DEBUG_PRINTLN((topic_ + " (Imu.cpp): IMU update failed.").c_str());
+    } else {
+      imu_msg_.time.data = Sensor::getTimestamp();
+      if (sensor_data_ == nullptr) {
+        error((topic_ + " (Imu.cpp): sensor_data == nullptr").c_str(), 10);
+      }
+      imu_msg_.gx = sensor_data_[ImuReading::GX];
+      imu_msg_.gy = sensor_data_[ImuReading::GY];
+      imu_msg_.gz = sensor_data_[ImuReading::GZ];
+      imu_msg_.ax = sensor_data_[ImuReading::AX];
+      imu_msg_.ay = sensor_data_[ImuReading::AY];
+      imu_msg_.az = sensor_data_[ImuReading::AZ];
 #ifndef DEBUG
-    publisher_.publish(&imu_msg_);
+      publisher_.publish(&imu_msg_);
 #endif
-    Sensor::newMeasurementIsNotAvailable();
+      Sensor::newMeasurementIsNotAvailable();
+    }
   }
 }
 
