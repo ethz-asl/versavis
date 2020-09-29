@@ -2,7 +2,7 @@
 //  September 2020
 //  Author: Pascal Auf der Maur <pascalau@ethz.ch>
 ////////////////////////////////////////////////////////////////////////////////
-//  BMI055.cpp
+//  BMI088.cpp
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "BMI055.h"
+#include "BMI088.h"
 #include "helper.h"
 #include "versavis_configuration.h"
 
@@ -43,7 +43,7 @@
 // acc_addr - Address of accelerometer on bus.
 // gyr_addr - Address of gyroscope on bus.
 ////////////////////////////////////////////////////////////////////////////
-BMI055::BMI055(ros::NodeHandle *nh, const String &topic, const int rate_hz,
+BMI088::BMI088(ros::NodeHandle *nh, const String &topic, const int rate_hz,
               Timer &timer, int acc_addr, int gyr_addr): Imu(nh, topic, rate_hz, timer) {
     acc_addr_ = acc_addr;
     gyr_addr_ = gyr_addr;
@@ -53,50 +53,66 @@ BMI055::BMI055(ros::NodeHandle *nh, const String &topic, const int rate_hz,
 ////////////////////////////////////////////////////////////////////////////
 // Setup function
 ////////////////////////////////////////////////////////////////////////////
-void BMI055::setup(){
-    DEBUG_PRINTLN((topic_ + " (BMI055.cpp): Setup."));
+void BMI088::setup(){
+    DEBUG_PRINTLN((topic_ + " (BMI088.cpp): Setup."));
 
     Wire.begin();
 
     configI2C();
-    regWrite(acc_addr_, ACC_BGW_SOFTRESET, 0xB6);
+
+    regWrite(acc_addr_, ACC_SOFTRESET, 0xB6);
     delay(300);
-    regWrite(gyr_addr_, GYR_BGW_SOFTRESET, 0xB6);
+    regWrite(gyr_addr_, GYRO_SOFTRESET, 0xB6);
     delay(300);
-    configI2C();
+
+    // Set powermode of IMU
+    regWrite(acc_addr_, ACC_PWR_CTRL, 0x04);
+    delay(5);
+    regWrite(acc_addr_, ACC_PWR_CONF, 0x00);
+    delay(5);
 
     /* Configures the bandwidth of the internal data filter of the 
      * accelerometer.
-     * More details on page 55 of the datasheet. */
-    regWrite(acc_addr_, ACC_PMU_BW, 0x0E);
+     * More details on page 29 of the datasheet. */
+    regWrite(acc_addr_, ACC_CONF, 0xAB);
     delay(20);
 
     /* Configures the range of the accelerometer
      *
      * Reg entry | Range | imu_accelerator_sensitivity
      * ----------+-------+------------------------------
-     *    0x03   | +-2g  | 0.00097
+     *    0x00   | +-3g  | 0.0000916
      * ----------+-------+------------------------------
-     *    0x05   | +-4g  | 0.0019
+     *    0x01   | +-6g  | 0.000183
      * ----------+-------+------------------------------
-     *    0x08   | +-8g  | 0.0039
+     *    0x02   | +-12g | 0.000366
      * ----------+-------+------------------------------
-     *    0x0C   | +-16g | 0.0078
+     *    0x03   | +-24g | 0.000732
      */
-    regWrite(acc_addr_, ACC_PMU_RANGE, 0x08);
-    delay(20);
-
-    /* Activates slow offset compensation of the accelerometer
-     * to prevent offset.
-     * The sensor also supports fast offset compensation
-     * if this is more desirable for the application.*/
-    regWrite(acc_addr_, ACC_OFC_CTRL, 0x07);
+    regWrite(acc_addr_, ACC_RANGE, 0x08);
     delay(20);
 
     /* Configures the bandwidth of the internal data filter of the 
      * gyroscope.
-     * More infos on page 101 of the datasheet. */
-    regWrite(gyr_addr_, GYR_BW, 0x01);
+     * Reg entry |  BW   
+     * ----------+-------
+     *    0x80   | 532Hz
+     * ----------+-------
+     *    0x81   | 230Hz
+     * ----------+-------
+     *    0x82   | 116Hz
+     * ----------+-------
+     *    0x83   |  47Hz
+     * ----------+-------
+     *    0x84   |  23Hz
+     * ----------+-------
+     *    0x85   |  12Hz
+     * ----------+-------
+     *    0x86   |  64Hz
+     * ----------+-------
+     *    0x87   |  32Hz
+     * More infos on page 39 of the datasheet. */
+    regWrite(gyr_addr_, GYRO_BANDWIDTH, 0x81);
     delay(20);
 
     /* Configures the range of the gyroscope
@@ -113,14 +129,7 @@ void BMI055::setup(){
      * ----------+------------+-------------------------
      *    0x04   | +-125°/s   | 0.0038
      */
-    regWrite(gyr_addr_, GYR_RANGE, 0x02);
-    delay(20);
-
-    /* Activates slow offset compensation of the gyroscope 
-     * to prevent offset.
-     * The sensor also supports fast offset compensation
-     * if this is more desirable for the application.*/
-    regWrite(gyr_addr_, GYR_SOC, 0x57);
+    regWrite(gyr_addr_, GYRO_RANGE, 0x02);
     delay(20);
 
     Imu::setupPublisher();
@@ -131,7 +140,7 @@ void BMI055::setup(){
 ////////////////////////////////////////////////////////////////////////////
 // Destructor
 ////////////////////////////////////////////////////////////////////////////
-BMI055::~BMI055(){
+BMI088::~BMI088(){
     Wire.end();
 
 }
@@ -139,19 +148,17 @@ BMI055::~BMI055(){
 ////////////////////////////////////////////////////////////////////////////
 // Softresets the IMU. 
 ////////////////////////////////////////////////////////////////////////////
-int BMI055::resetDUT(uint8_t ms){
-    regWrite(acc_addr_, ACC_BGW_SOFTRESET, 0xB6);
+int BMI088::resetDUT(uint8_t ms){
+    regWrite(acc_addr_, ACC_SOFTRESET, 0xB6);
     delay(300);
-    regWrite(gyr_addr_, GYR_BGW_SOFTRESET, 0xB6);
+    regWrite(gyr_addr_, GYRO_SOFTRESET, 0xB6);
     delay(300);
-    configI2C();
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
 // Configures the I2C Bus to run at fastest possible speed for IMU.
 ////////////////////////////////////////////////////////////////////////////
-int BMI055::configI2C(){
+int BMI088::configI2C(){
     Wire.setClock(400000);
     return 1;
 }
@@ -162,7 +169,7 @@ int BMI055::configI2C(){
 // devAddr - Device address on bus.
 // regAddr - Register address on device.
 ////////////////////////////////////////////////////////////////////////////
-int16_t BMI055::regRead(uint8_t devAddr, uint8_t regAddr){
+int16_t BMI088::regRead(uint8_t devAddr, uint8_t regAddr){
     Wire.beginTransmission(devAddr);
     Wire.write(regAddr);
     Wire.endTransmission();
@@ -183,7 +190,7 @@ int16_t BMI055::regRead(uint8_t devAddr, uint8_t regAddr){
 // regAddr - Register address on device.
 // regData - Data to be written to the register.
 ////////////////////////////////////////////////////////////////////////////
-int BMI055::regWrite(uint8_t devAddr, uint8_t regAddr, int8_t regData){
+int BMI088::regWrite(uint8_t devAddr, uint8_t regAddr, int8_t regData){
     Wire.beginTransmission(devAddr);
     Wire.write(regAddr);
     Wire.write(regData);
@@ -195,47 +202,48 @@ int BMI055::regWrite(uint8_t devAddr, uint8_t regAddr, int8_t regData){
 // Performs a burst read from both sensors and returns
 // a pointer to the data.
 ////////////////////////////////////////////////////////////////////////////
-int16_t *BMI055::burstRead(void){
-    uint8_t burstdata[14];
+int16_t *BMI088::burstRead(void){
+    uint8_t burstdata[12];
     static int16_t burstwords[7];
-    
-    Wire.beginTransmission(acc_addr_);
-    Wire.write(ACC_ACCD_X_LSB);
-    Wire.endTransmission();
-
-    Wire.requestFrom(acc_addr_, 6);
-    burstdata[0] = Wire.read(); //ACCEL_X_LSB
-    burstdata[1] = Wire.read(); //ACCEL_X_MSB
-    burstdata[2] = Wire.read(); //ACCEL_Y_LSB
-    burstdata[3] = Wire.read(); //ACCEL_Y_MSB
-    burstdata[4] = Wire.read(); //ACCEL_Z_LSB
-    burstdata[5] = Wire.read(); //ACCEL_Z_MSB
 
     Wire.beginTransmission(gyr_addr_);
-    Wire.write(GYR_RATE_X_LSB);
+    Wire.write(RATE_X_LSB);
     Wire.endTransmission();
 
     Wire.requestFrom(gyr_addr_, 6);
-    burstdata[6] = Wire.read(); //GYR_X_LSB
-    burstdata[7] = Wire.read(); //GYR_X_MSB
-    burstdata[8] = Wire.read(); //GYR_Y_LSB
-    burstdata[9] = Wire.read(); //GYR_Y_MSB
-    burstdata[10] = Wire.read(); //GYR_Z_LSB
-    burstdata[11] = Wire.read(); //GYR_Z_MSB
+    burstdata[0] = Wire.read(); //RATE_X_LSB
+    burstdata[1] = Wire.read(); //RATE_X_MSB
+    burstdata[2] = Wire.read(); //RATE_Y_LSB
+    burstdata[3] = Wire.read(); //RATE_Y_MSB
+    burstdata[4] = Wire.read(); //RATE_Z_LSB
+    burstdata[5] = Wire.read(); //RATE_Z_MSB
     
-    burstwords[1] = (burstdata[7] << 8) | (burstdata[6]);
-    burstwords[2] = (burstdata[9] << 8) | (burstdata[8]);
-    burstwords[3] = (burstdata[11] << 8) | (burstdata[10]);
-    burstwords[4] = (burstdata[1] << 4) | (burstdata[0] >> 4);
-    burstwords[5] = (burstdata[3] << 4) | (burstdata[2] >> 4);
-    burstwords[6] = (burstdata[5] << 4) | (burstdata[4] >> 4);
+    Wire.beginTransmission(acc_addr_);
+    Wire.write(ACC_X_LSB);
+    Wire.endTransmission();
+
+    Wire.requestFrom(acc_addr_, 6);
+    burstdata[6] = Wire.read(); //ACC_X_LSB
+    burstdata[7] = Wire.read(); //ACC_X_MSB
+    burstdata[8] = Wire.read(); //ACC_Y_LSB
+    burstdata[9] = Wire.read(); //ACC_Y_MSB
+    burstdata[10] = Wire.read(); //ACC_Z_LSB
+    burstdata[11] = Wire.read(); //ACC_Z_MSB
+
+    
+    burstwords[1] = (burstdata[1] << 8) | (burstdata[0]);
+    burstwords[2] = (burstdata[3] << 8) | (burstdata[2]);
+    burstwords[3] = (burstdata[5] << 8) | (burstdata[4]);
+    burstwords[4] = (burstdata[7] << 8) | (burstdata[6]);
+    burstwords[5] = (burstdata[9] << 8) | (burstdata[8]);
+    burstwords[6] = (burstdata[11] << 8) | (burstdata[10]);
 
     burstwords[1] = -(burstwords[1] & 32768) + (burstwords[1] & ~32768);
     burstwords[2] = -(burstwords[2] & 32768) + (burstwords[2] & ~32768);
     burstwords[3] = -(burstwords[3] & 32768) + (burstwords[3] & ~32768);
-    burstwords[4] = -(burstwords[4] & 2048) + (burstwords[4] & ~2048);
-    burstwords[5] = -(burstwords[5] & 2048) + (burstwords[5] & ~2048);
-    burstwords[6] = -(burstwords[6] & 2048) + (burstwords[6] & ~2048);
+    burstwords[4] = -(burstwords[4] & 32768) + (burstwords[4] & ~32768);
+    burstwords[5] = -(burstwords[5] & 32768) + (burstwords[5] & ~32768);
+    burstwords[6] = -(burstwords[6] & 32768) + (burstwords[6] & ~32768);
 
     return burstwords;
 }
@@ -243,21 +251,21 @@ int16_t *BMI055::burstRead(void){
 ////////////////////////////////////////////////////////////////////////////
 // Scales the read out 12 bit measurement of the accelerometer to m/s^2
 ////////////////////////////////////////////////////////////////////////////
-float BMI055::accelScale(int16_t sensorData){
+float BMI088::accelScale(int16_t sensorData){
     return (sensorData/ 2048.0) * 8.0 * 9.807;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 // Scales the read out 16 bit measurement of the gyroscope to rad/s
 ////////////////////////////////////////////////////////////////////////////
-float BMI055::gyroScale(int16_t sensorData){
+float BMI088::gyroScale(int16_t sensorData){
     return (sensorData/ 32768.0) * 500.0 * M_PI / 180.0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 // Scales the read out 8 bit measurement of the temperature to °C
 ////////////////////////////////////////////////////////////////////////////
-float BMI055::tempScale(int16_t sensorData){
+float BMI088::tempScale(int16_t sensorData){
     float finalData = sensorData * 0.5 + 23.0;
 
     return finalData;
@@ -266,7 +274,7 @@ float BMI055::tempScale(int16_t sensorData){
 ////////////////////////////////////////////////////////////////////////////
 // Updates the sensor data without any validity checks.
 ////////////////////////////////////////////////////////////////////////////
-bool BMI055::updateData(){
+bool BMI088::updateData(){
     sensor_data_ = burstRead();
     return sensor_data_ != nullptr;
 }
@@ -274,7 +282,7 @@ bool BMI055::updateData(){
 ////////////////////////////////////////////////////////////////////////////
 // Updates the sensor data without any validity checks.
 ////////////////////////////////////////////////////////////////////////////
-bool BMI055::updateDataIterative(){
+bool BMI088::updateDataIterative(){
     sensor_data_ = burstRead();
     return sensor_data_ != nullptr;
 }
