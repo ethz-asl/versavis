@@ -26,6 +26,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Time.h>
 
@@ -41,6 +42,7 @@ public:
   ~VersaVISSynchronizer();
 
   void imageCallback(const image_numbered_msgs::ImageNumbered &image_msg);
+  void cameraInfoCallback(const sensor_msgs::CameraInfo &camera_info_msg);
   void imageTimeCallback(const versavis::TimeNumbered &image_time_msg);
   void publishImg(const image_numbered_msgs::ImageNumbered &image_msg);
 
@@ -56,6 +58,8 @@ private:
   ros::NodeHandle nh_private_;
   image_transport::ImageTransport image_transport_;
   ros::Subscriber image_sub_;
+  ros::Subscriber camera_info_sub_;
+  ros::Publisher camera_info_pub_;
   image_transport::Publisher image_fast_pub_;
   image_transport::Publisher image_slow_pub_;
   ros::Publisher initialized_pub_;
@@ -63,6 +67,8 @@ private:
 
   // Topic names.
   std::string driver_topic_;
+  std::string camera_info_sub_topic_;
+  std::string camera_info_pub_topic_;
   std::string image_fast_pub_topic_;
   std::string image_slow_pub_topic_;
   std::string image_time_sub_topic_;
@@ -74,6 +80,7 @@ private:
   std::vector<image_numbered_msgs::ImageNumbered> image_candidates_;
   ros::Time last_stamp_;
   ros::Time init_timestamp_;
+  sensor_msgs::CameraInfo last_camera_info_;
 
   // Constants.
   const uint8_t kMaxImageCandidateLength;

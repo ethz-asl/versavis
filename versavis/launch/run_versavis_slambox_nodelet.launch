@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!-- camera name prefix -->
+  <!-- <arg name="camera_name"        default="pylon_camera" /> -->
+  <!-- <arg name="camera_type"             default="usb" /> -->
+  <!-- enable image pipeline -->
+  <!-- <arg name="image_proc"              default="true" /> -->
+  <!-- camera manager -->
+  <!-- <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" /> -->
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Camera Parameters for pylon_camera_node copied from pylon_camera/launch/pylon_camera_node.launch -->
+  <arg name="respawn" default="false" />
+  <arg name="debug" default="false" />
+  <arg name="mtu_size" default="1500" />
+  <arg name="startup_user_set" default="CurrentSetting" />
+  <arg name="enable_status_publisher" default="true" />
+  <arg name="enable_current_params_publisher" default="true" />
+  <arg name="calibration_path" default="file://$(find slambox_utils)/calibration" />
+  <arg name="config_file_cam0" default="$(find slambox_utils)/calibration/23057654.yaml" />
+  <arg name="config_file_cam1" default="$(find slambox_utils)/calibration/23186227.yaml" />
+  <?ignore
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args" />
+  <arg name="launch_prefix_0" value="" />
+  <arg name="launch_prefix_1" value="" />
+  \?>
+
+  <!-- Versavis Parameters -->
+  <arg name="imu_offset_us" default="18696" />
+  <!-- <arg name="imu_offset_us" default="0" /> -->
+    
+  <group ns="cam0" >
+    <arg name="versavis_topic" default="/versavis/cam0" />
+
+    <include file="$(find slambox_utils)/launch/rb_pylon.launch">
+      <arg name="name" value="pylon_cam0_left" />
+      <arg name="cam_id_value"  value="23057654" />
+      <arg name="camera_info_url" value="$(arg calibration_path)" />
+      <arg name="exposure_auto" value="Continuous" />
+      <arg name="S_trigger_frame_start_mode" value="On" />
+      <arg name="width" value="1280" /> <!-- 1280, 0 defaults to max resolution -->
+      <arg name="height" value="960" /> <!-- 960, 0 defaults to max resolution -->
+      <arg name="offset_x" value="392" />
+      <arg name="offset_y" value="292" />
+    </include>
+
+    <node pkg="nodelet" type="nodelet" name="camera_manager"
+          args="manager"
+          output="screen"
+          required="true" >
+       <param name="num_worker_threads" value="4" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
+	    args="load versavis/VersaVISSynchronizerNodelet camera_manager"
+          output="screen"
+          required="true">
+      <param name="driver_topic" type="string" value="pylon_cam0_left/image_numbered" />
+      <param name="camera_info_topic" type="string" value="pylon_cam0_left/camera_info" />
+      <param name="versavis_topic" type="string" value="$(arg versavis_topic)" />
+      <param name="imu_offset_us" type="int" value="$(arg imu_offset_us)"/>
+    </node>
+  
+    <include file="$(find versavis)/launch/image_proc.launch">
+      <arg name="manager" value="camera_manager" />
+      <arg name="topic_prefix" value="$(arg versavis_topic)/" />
+    </include>
+  </group>
+  
+  <group ns="cam1" >
+    <arg name="versavis_topic" default="/versavis/cam1" />
+
+    <include file="$(find slambox_utils)/launch/rb_pylon.launch">
+      <arg name="name" value="pylon_cam1_right" />
+      <arg name="cam_id_value" value="23186227"  />
+      <arg name="camera_info_url" value="$(arg calibration_path)" />
+      <arg name="exposure_auto" value="Continuous" />
+      <!--arg name="exposure_mode" value="TriggerWidth" /-->
+      <arg name="S_trigger_frame_start_mode" value="On" />
+      <arg name="width" value="1280"/>
+      <arg name="height" value="960" />
+      <arg name="offset_x" value="392" />
+      <arg name="offset_y" value="292" />
+    </include>
+    
+    <node pkg="nodelet" type="nodelet" name="camera_manager"
+          args="manager"
+          output="screen"
+          required="true" >
+       <param name="num_worker_threads" value="4" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam0"
+	    args="load versavis/VersaVISSynchronizerNodelet camera_manager"
+          output="screen"
+          required="true">
+      <param name="driver_topic" type="string" value="pylon_cam1_right/image_numbered" />
+      <param name="camera_info_topic" type="string" value="pylon_cam1_right/camera_info" />
+      <param name="versavis_topic" type="string" value="$(arg versavis_topic)" />
+      <param name="imu_offset_us" type="int" value="$(arg imu_offset_us)"/>
+    </node>
+
+    <include file="$(find versavis)/launch/image_proc.launch">
+      <arg name="manager" value="camera_manager" />
+      <arg name="topic_prefix" value="$(arg versavis_topic)/" />
+    </include>
+  </group>
+  
+  <!-- Relay publish chameleon3 camera_info topic as versavis. -->
+  <!-- <node name="relay0" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_0/cam0_left/camera_info /versavis/cam0/camera_info" required="true" output="screen"/> -->
+  <!-- <node name="relay1" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_1/cam1_right/camera_info /versavis/cam1/camera_info" required="true" output="screen"/> -->
+  <!--node name="relay1" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_1/camera_info /versavis/cam1/camera_info" required="true" output="screen"/-->
+
+  <!-- Run VersaVIS link. -->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/versavis _baud:=250000" respawn="true" output="screen" />
+
+  <!-- Reset VersaVIS with ros message -->
+  <node pkg="rostopic" type="rostopic" name="resetter"
+    args="pub /versavis/reset std_msgs/Bool false --once" output="screen" />
+
+  <!-- Recieve IMU message. TODO: Adapt to SLAM Box ADIS-->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" required="true" output="screen">
+    <!-- ADIS16448AMLZ parameters -->
+    <param name="imu_accelerator_sensitivity"           value="0.000833" />
+    <!-- <param name="imu_gyro_sensitivity"                  value="0.04" /> -->
+    <param name="imu_gyro_sensitivity"                  value="0.04" />
+    <param name="imu_acceleration_covariance"           value="0.043864908" /> <!-- no idea where it is from -->
+    <param name="imu_gyro_covariance"                   value="6e-9" /> <!-- no idea where it is from -->
+    <param name="imu_sub_topic"           type="string" value="/versavis/imu_micro"/>
+  </node>
+
+  <!-- Dynamic reconfigure. -->
+  <!--node name="reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" /-->
+
+</launch>

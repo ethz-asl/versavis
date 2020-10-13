@@ -36,10 +36,19 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
                     &VersaVISSynchronizer::imageTimeCallback, this);
   ROS_INFO("Subscribing to %s.", image_time_sub_topic_.c_str());
 
+  // Subscriber for the camera info message to be relayed with correct time stamp
+  camera_info_sub_ =
+      nh_.subscribe(camera_info_sub_topic_, 10u,
+                    &VersaVISSynchronizer::cameraInfoCallback, this);
+  ROS_INFO("Subscribing to %s.", camera_info_sub_topic_.c_str());
+
   // Publisher to let the triggering board know as soon as the camera is
   // initialized.
   initialized_pub_ = nh_.advertise<std_msgs::Bool>(initialized_pub_topic_, 1u);
   ROS_INFO("Publishing to %s.", initialized_pub_topic_.c_str());
+
+  camera_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>(camera_info_pub_topic_, 10u);
+  ROS_INFO("Publishing to %s.", camera_info_pub_topic_.c_str());
 
   image_fast_pub_ = image_transport_.advertise(image_fast_pub_topic_, 10u);
   ROS_INFO("Publishing to %s.", image_fast_pub_topic_.c_str());
@@ -180,6 +189,16 @@ void VersaVISSynchronizer::imageTimeCallback(
   }
 }
 
+void VersaVISSynchronizer::cameraInfoCallback(
+    const sensor_msgs::CameraInfo &camera_info_msg) {
+  ROS_INFO_ONCE("%s: Received first camera info message.",
+                camera_info_pub_topic_.c_str());
+  if (initialized_) {
+    last_camera_info_ = camera_info_msg;
+  }
+}
+
+
 void VersaVISSynchronizer::publishImg(
     const image_numbered_msgs::ImageNumbered &image_msg) {
   if (image_msg.image.header.stamp.toSec() == 0) {
@@ -202,6 +221,9 @@ void VersaVISSynchronizer::publishImg(
   last_stamp_ = image_msg.image.header.stamp;
 
   image_fast_pub_.publish(image_msg.image);
+  // Camera info needs to be precisely time synchronized to image topic for image_proc
+  last_camera_info_.header.stamp = last_stamp_;
+  camera_info_pub_.publish(last_camera_info_);
   if (publish_slow_images_) {
     // Publish color/raw image at lower rate.
     if (slow_publisher_image_counter_ >=
@@ -222,6 +244,11 @@ bool VersaVISSynchronizer::readParameters() {
     ROS_ERROR("Define an image topic from the camera driver.");
   }
 
+  if (!nh_private_.getParam("camera_info_topic", camera_info_sub_topic_)) {
+    ROS_WARN("No camera info topic specified. Using default value 'camera_info'");
+    camera_info_sub_topic_ = "camera_info";
+  }
+
   std::string versavis_topic;
   if (!nh_private_.getParam("versavis_topic", versavis_topic)) {
     ROS_ERROR("Define a topic range where the corrected image is published.");
@@ -231,6 +258,7 @@ bool VersaVISSynchronizer::readParameters() {
     }
     image_time_sub_topic_ = versavis_topic + "image_time";
     image_fast_pub_topic_ = versavis_topic + "image_raw";
+    camera_info_pub_topic_ = versavis_topic + "camera_info";
     initialized_pub_topic_ = versavis_topic + "init";
     if (publish_slow_images_) {
       image_slow_pub_topic_ = versavis_topic + "slow/image_raw";

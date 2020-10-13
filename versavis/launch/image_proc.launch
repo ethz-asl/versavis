@@ -1,0 +1,40 @@
+<!-- Launch in the camera namespace containing "image_raw" and "camera_info" -->
+<launch>
+
+  <arg name="manager" /> <!-- Must be globally qualified -->
+  <arg name="respawn" default="false" />
+  <!-- By default, expect images and camera info in same namespace -->
+  <!-- Remapping all topics to any other namespace using topics found at: http://wiki.ros.org/image_proc -->
+  <arg name="topic_prefix" default="" doc="prefix to append to all topics. Warning: no additional '/' added" />
+
+  <arg     if="$(arg respawn)" name="bond" value="" />
+  <arg unless="$(arg respawn)" name="bond" value="--no-bond" />
+
+  <!-- Debayered images -->
+  <node pkg="nodelet" type="nodelet" name="debayer"
+        args="load image_proc/debayer $(arg manager) $(arg bond)"
+	      respawn="$(arg respawn)">
+    <remap from="image_raw" to="$(arg topic_prefix)image_raw" />
+    <remap from="image_mono" to="$(arg topic_prefix)image_mono" />
+    <remap from="image_color" to="$(arg topic_prefix)image_color" />
+  </node>
+
+  <!-- Monochrome rectified image -->
+  <node pkg="nodelet" type="nodelet" name="rectify_mono"
+        args="load image_proc/rectify $(arg manager) $(arg bond)"
+	      respawn="$(arg respawn)" >
+    <remap from="image_mono" to="$(arg topic_prefix)image_mono" />
+    <remap from="camera_info" to="$(arg topic_prefix)camera_info" />
+    <remap from="image_rect" to="$(arg topic_prefix)image_rect" />
+  </node>
+
+  <!-- Color rectified image -->
+  <node pkg="nodelet" type="nodelet" name="rectify_color"
+        args="load image_proc/rectify $(arg manager) $(arg bond)"
+	      respawn="$(arg respawn)">
+    <remap from="image_mono" to="$(arg topic_prefix)image_color" />
+    <remap from="camera_info" to="$(arg topic_prefix)camera_info" />
+    <remap from="image_rect" to="$(arg topic_prefix)image_rect_color" />
+  </node>  
+
+</launch>
