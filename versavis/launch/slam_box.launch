@@ -1,8 +1,0 @@
-<launch>
-  <!-- VI Sensor -->
-  <include file="$(find versavis)/launch/run_versavis.launch" />
-  <!--include file="$(find versavis)/launch/run_cameras.launch" /-->
-
-  <!-- Velodyne -->
-  <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-</launch>

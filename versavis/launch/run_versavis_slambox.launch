@@ -17,8 +17,9 @@
   <arg name="startup_user_set" default="CurrentSetting" />
   <arg name="enable_status_publisher" default="true" />
   <arg name="enable_current_params_publisher" default="true" />
-  <arg name="config_file_cam0" default="$(find versavis)/cfg/slam_box_cam0.yaml" />
-  <arg name="config_file_cam1" default="$(find versavis)/cfg/slam_box_cam1.yaml" />
+  <arg name="calibration_path" default="file://$(find slambox_utils)/calibration" />
+  <arg name="config_file_cam0" default="$(find slambox_utils)/calibration/23057654.yaml" />
+  <arg name="config_file_cam1" default="$(find slambox_utils)/calibration/23186227.yaml" />
   <?ignore
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args" />
@@ -26,37 +27,53 @@
   <arg name="launch_prefix_1" value="" />
   \?>
 
+  <!-- Versavis Parameters -->
+  <!-- <arg name="imu_offset_us" default="18696" /> -->
+  <arg name="imu_offset_us" default="0" />
+
   <group ns="$(arg camera_name)_$(arg camera_type)_0" >
-    <include file="$(find versavis)/launch/rb_pylon.launch">
+    <include file="$(find slambox_utils)/launch/rb_pylon.launch">
       <arg name="name" value="cam0_left" />
-      <arg name="cam_id_value"  value="23186227" /> <!-- 23057654" /-->
+      <arg name="cam_id_value"  value="23057654" />
+      <arg name="camera_info_url" value="$(arg calibration_path)" />
       <arg name="exposure_auto" value="Continuous" />
       <arg name="S_trigger_frame_start_mode" value="On" />
+      <arg name="width" value="1280" /> <!-- 1280, 0 defaults to max resolution -->
+      <arg name="height" value="960" /> <!-- 960, 0 defaults to max resolution -->
+      <arg name="offset_x" value="392" />
+      <arg name="offset_y" value="292" />
+      <arg name="image_proc_image_topic" default="/versavis/cam0/image_raw" />
     </include>
     <node name="compile_nodelet_cam0" pkg="versavis" type="versavis_synchronizer_node"
           required="true" output="screen">
       <param name="driver_topic" type="string" value="cam0_left/image_numbered" />
       <param name="versavis_topic" type="string" value="/versavis/cam0/" />
-      <param name="imu_offset_us" type="int" value="0"/>
+      <param name="imu_offset_us" type="int" value="$(arg imu_offset_us)"/>
     </node>
   </group>
-  <?ignore
+  
   <group ns="$(arg camera_name)_$(arg camera_type)_1" >
-    <include file="$(find versavis)/launch/rb_pylon.launch">
+    <include file="$(find slambox_utils)/launch/rb_pylon.launch">
       <arg name="name" value="cam1_right" />
       <arg name="cam_id_value" value="23186227"  />
+      <arg name="camera_info_url" value="$(arg calibration_path)" />
       <arg name="exposure_auto" value="Continuous" />
       <!--arg name="exposure_mode" value="TriggerWidth" /-->
       <arg name="S_trigger_frame_start_mode" value="On" />
+      <arg name="width" value="1280"/>
+      <arg name="height" value="960" />
+      <arg name="offset_x" value="392" />
+      <arg name="offset_y" value="292" />
+      <arg name="image_proc_image_topic" default="/versavis/cam0/image_raw" />
     </include>
     <node name="compile_nodelet_cam0" pkg="versavis" type="versavis_synchronizer_node"
           required="true" output="screen">
       <param name="driver_topic" type="string" value="cam1_right/image_numbered" />
       <param name="versavis_topic" type="string" value="/versavis/cam1/" />
-      <param name="imu_offset_us" type="int" value="0"/>
+      <param name="imu_offset_us" type="int" value="$(arg imu_offset_us)"/>
     </node>
   </group>
-  /?>
+  
   <!-- Relay publish chameleon3 camera_info topic as versavis. -->
   <node name="relay0" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_0/camera_info /versavis/cam0/camera_info" required="true" output="screen"/>
   <!--node name="relay1" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_1/camera_info /versavis/cam1/camera_info" required="true" output="screen"/-->
