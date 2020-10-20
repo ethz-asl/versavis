@@ -89,7 +89,7 @@ private:
   // Constants.
   const uint8_t kMaxImageCandidateLength;
   const uint8_t kMinSuccessfullConsecutiveMatches;
-  const double kMaxImageDelayThreshold;;
+  const double kMaxImageDelayThreshold;
 
   // Image numbers and initialization.
   uint8_t init_number_;
