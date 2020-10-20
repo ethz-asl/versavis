@@ -82,7 +82,7 @@ Refer to [Kalibr](https://github.com/ethz-asl/kalibr) for a good calibration fra
 * Adapt `versavis/launch/run_versavis.launch` to your needs.
 * Run with
 ```
-rosrun versavis run_versavis.launch
+roslaunch versavis run_versavis.launch
 ```
 * Wait for successfull initialization.
 
