@@ -56,7 +56,7 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
            initialized_pub_topic_.c_str());
 
   image_fast_pub_ = image_transport_.advertise(image_fast_pub_topic_, 10u);
-  ROS_INFO("Publishing image o %s.", image_fast_pub_topic_.c_str());
+  ROS_INFO("Publishing image to %s.", image_fast_pub_topic_.c_str());
 
   if (publish_slow_images_) {
     image_slow_pub_ = image_transport_.advertise(image_slow_pub_topic_, 1u);
