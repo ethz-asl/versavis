@@ -48,6 +48,7 @@ Timer timer_cam2 = Timer((TcCount16 *)TC3);
 Timer timer_imu = Timer((TcCount16 *)TC5);
 
 /* ----- IMU ----- */
+/**
 #ifdef USE_ADIS16445
 ADIS16445 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
 #elif defined(USE_ADIS16448AMLZ)
@@ -59,17 +60,17 @@ ADIS16460 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
 #elif defined(USE_VN100)
 VN100 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu);
 #endif
-
+**/
 /* ----- Cameras ----- */
 Camera cam0(&nh, CAM0_TOPIC, CAM0_RATE, timer_cam0, CAM0_TYPE, CAM0_TRIGGER_PIN,
-            CAM0_EXPOSURE_PIN, true);
+            CAM0_EXPOSURE_PIN, false);
 Camera cam1(&nh, CAM1_TOPIC, CAM1_RATE, timer_cam1, CAM1_TYPE, CAM1_TRIGGER_PIN,
-            CAM1_EXPOSURE_PIN, true);
+            CAM1_EXPOSURE_PIN, false);
 Camera cam2(&nh, CAM2_TOPIC, CAM2_RATE, timer_cam2, CAM2_TYPE, CAM2_TRIGGER_PIN,
-            CAM2_EXPOSURE_PIN, true);
+            CAM2_EXPOSURE_PIN, false);
 
 void setup() {
-  DEBUG_INIT(115200);
+DEBUG_INIT(115200);
 
 /* ----- Define pins and initialize. ----- */
 #ifdef ADD_TRIGGERS
@@ -102,7 +103,7 @@ void setup() {
 
   DEBUG_PRINTLN(F("Main: Start setup."));
 
-  imu.setup();
+  //imu.setup();
   cam0.setup();
   cam1.setup();
   cam2.setup();
@@ -146,9 +147,9 @@ void setup() {
   NVIC_EnableIRQ(TCC0_IRQn);
   NVIC_EnableIRQ(TCC1_IRQn);
   NVIC_EnableIRQ(TC3_IRQn);
-  NVIC_EnableIRQ(TC5_IRQn);
+  //NVIC_EnableIRQ(TC5_IRQn);
 
-  imu.begin();
+  //imu.begin();
   cam0.begin();
   cam1.begin();
   cam2.begin();
@@ -171,9 +172,9 @@ void setup() {
 
 void loop() {
   cam0.publish();
-  cam1.publish();
-  cam2.publish();
-  imu.publish();
+  //cam1.publish();
+  //cam2.publish();
+  //imu.publish();
 
 #ifndef DEBUG
   nh.spinOnce();
@@ -192,9 +193,11 @@ void TC3_Handler() { // Called by cam2_timer for camera 2 trigger.
   cam2.triggerMeasurement();
 }
 
+/**
 void TC5_Handler() { // Called by imu_timer for imu trigger.
   imu.triggerMeasurement();
 }
+**/
 
 void exposureEnd0() {
   cam0.exposureEnd();
@@ -225,3 +228,4 @@ void exposureEnd2() {
   }
 #endif
 }
+

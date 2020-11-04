@@ -47,7 +47,12 @@ void Camera::setup() {
   }
   DEBUG_PRINTLN((topic_ + " (Camera.cpp): Setup.").c_str());
 
-  setupInitSubscriber();
+  // We are not running the ros node on the computer side we we fuck the subscriber or else
+  // everything will just run at 1Hz, then we by pass the handshaking by just setting initialiszed_ = true
+  // setupInitSubscriber();
+  initialized_ = true;
+  
+  
   setupPublisher();
 
   pinMode(trigger_pin_, OUTPUT);
