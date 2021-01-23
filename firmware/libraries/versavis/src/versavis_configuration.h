@@ -27,11 +27,14 @@
 #define CAM1_EXPOSURE_PIN 6
 
 // Camera 2
+#define USE_CAM2
+#ifdef USE_CAM2
 #define CAM2_TOPIC ""
 #define CAM2_RATE 5
 #define CAM2_TYPE trigger_type::NON_INVERTED
 #define CAM2_TRIGGER_PIN 16
 #define CAM2_EXPOSURE_PIN 7
+#endif
 
 /* ----- IMU -----*/
 // Possible values: USE_ADIS16445, USE_ADIS16448AMLZ, USE_ADIS16448BMLZ,
@@ -55,7 +58,27 @@
 #define ILLUMINATION_PIN 26
 #endif
 
+
+/* ----- Aerotenna uLanding ----- */
+// Activation of a uLanding on UART.
+// #define USE_U_LANDING
+#ifdef USE_U_LANDING
+#define U_LANDING_TOPIC "/versavis/u_landing_micro"
+#define U_LANDING_RATE 20
+#define U_LANDING_UART Serial // Serial or Serial1
+#endif
+
+/* ----- Garmin LidarLite ----- */
+// Activation of a Lidar Lite on I2C.
+// #define USE_LIDAR_LITE
+#ifdef USE_LIDAR_LITE
+#define LIDAR_LITE_TOPIC "/versavis/lidar_lite_micro"
+#define LIDAR_LITE_RATE 20
+#endif
+
+
 /* ----- Debug mode. ----- */
+
 // Define whether debug mode should be used. This provides output on the
 // standard console but invalidates ROS communication.
 // #define DEBUG

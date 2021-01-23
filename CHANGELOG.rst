@@ -1,3 +1,9 @@
+
+1.1.0 (TBD)
+------------------
+* Add Lidar Lite sensor
+* Add uLanding sensor
+
 1.0.1 (2020-03-12)
 ------------------
 * Added support for Vectornav VN-100
@@ -5,6 +11,7 @@
 Details in PR7_
 
 .. _PR7: https://github.com/ethz-asl/versavis/pull/7
+
 
 1.0.0 (2019-12-09)
 ------------------
