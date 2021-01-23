@@ -55,6 +55,14 @@
 #define ILLUMINATION_PIN 26
 #endif
 
+/* ----- Garmin LidarLite ----- */
+// Activation of a Lidar Lite on I2C.
+// #define USE_LIDAR_LITE
+#ifdef USE_LIDAR_LITE
+#define LIDAR_LITE_TOPIC "/versavis/lidar_lite_micro"
+#define LIDAR_LITE_RATE 20
+#endif
+
 /* ----- Debug mode. ----- */
 // Define whether debug mode should be used. This provides output on the
 // standard console but invalidates ROS communication.

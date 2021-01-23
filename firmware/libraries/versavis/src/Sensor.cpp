@@ -43,6 +43,27 @@ Sensor::Sensor(ros::NodeHandle *nh, const String &topic, const int rate_hz,
   }
 }
 
+// Range message version.
+Sensor::Sensor(ros::NodeHandle *nh, const String &topic, const int rate_hz,
+               Timer &timer, versavis::RangeMicro &range_msg,
+               const trigger_type type /* = trigger_type::NON_INVERTED */)
+    : nh_(nh), topic_(topic), publisher_(topic.c_str(), &range_msg),
+      new_measurement_available_(false), rate_hz_(rate_hz), timer_(timer),
+      type_(type), max_compare_(pow(2, 16)) {
+  if (nh == nullptr) {
+    error((topic_ + " (Sensor.cpp): The node handle is not available.").c_str(),
+          49);
+  }
+  if (rate_hz <= 0) {
+    error((topic_ + " (Sensor.cpp): The rate of a sensor needs to be positive.")
+              .c_str(),
+          50);
+  }
+  if (topic.length() == 0) {
+    error((topic_ + " (Sensor.cpp): Range topic is empty.").c_str(), 51);
+  }
+}
+
 void Sensor::setTimestampNow() { timestamp_ = nh_->now(); }
 
 ros::Time Sensor::getTimestamp() const { return timestamp_; }

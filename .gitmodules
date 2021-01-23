@@ -4,3 +4,6 @@
 [submodule "dependencies/versavis_hw"]
 	path = dependencies/versavis_hw
 	url = git@github.com:ethz-asl/versavis_hw.git
+[submodule "firmware/libraries/LIDAREnhanced"]
+	path = firmware/libraries/LIDAREnhanced
+	url = git@github.com:rikba/LIDAREnhanced.git
