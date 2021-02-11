@@ -38,7 +38,7 @@
 // USE_ADIS16460 and USE_VN100
 #define USE_ADIS16448BMLZ
 #define IMU_TOPIC "/versavis/imu_micro"
-#define IMU_RATE 200
+#define IMU_RATE 250
 
 /* ----- Additional triggers ----- */
 // Define whether additional test outputs should be used.

@@ -106,7 +106,7 @@ void ADIS16448BMLZ::setup() {
   // 0x0100: ±250°/sec, note that the lower dynamic range settings limit the
   // minimum filter tap sizes to maintain resolution.
 
-  int16_t kSensAvgRegister = 0x0404; // B0000 0100 0000 0000;
+  int16_t kSensAvgRegister = 0x0403; // B0000 0100 0000 0011, 8 TAP moving average;
   regWrite(SENS_AVG, kSensAvgRegister);
   delay(20);
 
