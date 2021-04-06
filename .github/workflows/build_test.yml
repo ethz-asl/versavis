@@ -15,19 +15,29 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {rosdistro: 'melodic', container: 'px4io/px4-dev-ros-melodic:2020-08-14'}
-          - {rosdistro: 'noetic', container: 'px4io/px4-dev-ros-noetic:2020-08-20'}
+          - {rosdistro: 'melodic', container: 'ros:melodic-ros-base-bionic'}
+          - {rosdistro: 'noetic', container: 'ros:noetic-ros-base-focal'}
     container: ${{ matrix.config.container }}
     steps:
     - uses: actions/checkout@v1
       with:
         token: ${{ secrets.ACCESS_TOKEN }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install catkin-tools on melodic
+      if: ${{ matrix.config.container == 'ros:melodic-ros-base-bionic' }}
+      run: |
+        apt update && apt install -y python3-wstool python-catkin-tools 
+    - name: Install catkin-tools on Noetic
+      if: ${{ matrix.config.container == 'ros:noetic-ros-base-focal' }}
+      run: |
+        apt update && apt install -y python3-pip
+        pip3 install osrf-pycommon
+        apt update && apt install -y python3-wstool python3-catkin-tools 
     - name: release_build_test
       working-directory: 
       run: |
-        apt update
-        apt install -y python3-wstool
+        
+        # apt update && apt install -y python3-wstool python3-catkin-tools 
         mkdir -p $HOME/catkin_ws/src;
         cd $HOME/catkin_ws
         catkin init

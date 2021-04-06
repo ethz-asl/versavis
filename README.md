@@ -1,4 +1,6 @@
 # VersaVIS -- An Open Versatile Multi-Camera Visual-Inertial Sensor Suite
+[![Build Test](https://github.com/ethz-asl/versavis/actions/workflows/build_test.yml/badge.svg)](https://github.com/ethz-asl/versavis/actions/workflows/build_test.yml)
+
 VersaVIS provides a complete, open-source hardware, firmware and software bundle to perform time synchronization of multiple cameras with an IMU featuring exposure compensation, host clock translation and independent and stereo camera triggering.
 
 
