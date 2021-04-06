@@ -64,6 +64,7 @@ Adapt the [configuration file](https://github.com/ethz-asl/versavis/blob/master/
 
 ### Flash firmware on the VersaVIS board
 * Install the arduino IDE from [here](https://www.arduino.cc/en/Main/OldSoftwareReleases#previous). Use version 1.8.2!
+    - Note that a small modification of the install script (`install.sh`) might be required. In particular you may need to change the line `RESOURCE_NAME=cc.arduino.arduinoide` to `RESOURCE_NAME=arduino-arduinoide` as per the issue [here](https://github.com/arduino/Arduino/issues/6116#issuecomment-290012812).
 * Open `firmware/versavis/versavis.ino` in the IDE
 * Go to `File -> Preferences`
 * Change Sketchbook location to `versavis/firmware/`
