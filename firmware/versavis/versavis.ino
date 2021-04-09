@@ -71,7 +71,7 @@ Camera cam2(&nh, CAM2_TOPIC, CAM2_RATE, timer_cam2, CAM2_TYPE, CAM2_TRIGGER_PIN,
 void setup() {
   DEBUG_INIT(115200);
 
-/* ----- Define pins and initialize. ----- */
+/* ----- Definve pins and initialize. ----- */
 #ifdef ADD_TRIGGERS
   pinMode(ADDITIONAL_TEST_PIN, OUTPUT);
   digitalWrite(ADDITIONAL_TEST_PIN, LOW);
@@ -160,8 +160,8 @@ void setup() {
   DEBUG_PRINTLN(F("Main: Attach interrupts."));
   attachInterrupt(digitalPinToInterrupt(cam0.exposurePin()), exposureEnd0,
                   FALLING);
-  attachInterrupt(digitalPinToInterrupt(cam1.exposurePin()), exposureEnd1,
-                  FALLING);
+  //attachInterrupt(digitalPinToInterrupt(cam1.exposurePin()), exposureEnd1,
+  //                FALLING);
   attachInterrupt(digitalPinToInterrupt(cam2.exposurePin()), exposureEnd2,
                   FALLING);
   interrupts();
