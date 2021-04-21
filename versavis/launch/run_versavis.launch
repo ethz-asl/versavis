@@ -2,7 +2,7 @@
 
 <launch>
    <!-- camera name prefix -->
-  <arg name="camera_name"             default="BFS" />
+  <arg name="camera_name"             default="GS" />
   <arg name="camera_type"             default="usb" />
   <!-- enable image pipeline -->
   <arg name="image_proc"              default="true" />
@@ -13,7 +13,7 @@
    <!-- Determine this using rosrun pointgrey_camera_driver list_cameras.
        If not specified, defaults to first camera found. -->
   <arg name="cam0_serial" default="19128740" />
-  <arg name="cam1_serial" default="18286011" />
+  <arg name="cam1_serial" default="15405661" />
   <arg name="calibrated" default="1" />
   <arg name="node_start_delay_cam0" default="10.0" />
   <arg name="node_start_delay_cam1" default="18.0" />

@@ -14,14 +14,18 @@
 /* ----- Camera configuration ----*/
 // Camera 0
 #define CAM0_TOPIC "/versavis/projector/"
-#define CAM0_RATE 10
+//#define CAM0_TOPIC ""
+//#define CAM0_RATE 10
+// #define CAM0_RATE 6 // 2p1 TPU
+#define CAM0_RATE 5  // 6 Pattern PSP
 #define CAM0_TYPE trigger_type::NON_INVERTED
 #define CAM0_TRIGGER_PIN 14
 #define CAM0_EXPOSURE_PIN 5
 
 // Camera 1
 #define CAM1_TOPIC "/versavis/cam1/"
-#define CAM1_RATE 60
+//#define CAM1_RATE 60
+#define CAM1_RATE 30
 #define CAM1_TYPE trigger_type::NON_INVERTED
 #define CAM1_TRIGGER_PIN 15
 #define CAM1_EXPOSURE_PIN 6
@@ -60,4 +64,4 @@
 // standard console but invalidates ROS communication.
 // #define DEBUG
 
-#endif // versavis_configuration_h
+#endif  // versavis_configuration_h

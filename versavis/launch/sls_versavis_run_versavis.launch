@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+
+<launch>
+   <!-- camera name prefix -->
+  <arg name="camera_name"             default="GS" />
+  <arg name="camera_type"             default="usb" />
+  <!-- enable image pipeline -->
+  <arg name="image_proc"              default="true" />
+  <!-- camera manager -->
+  <arg name="camera_manager"          default="$(arg camera_name)_camera_manager" />
+  <!-- <arg name="camera_settings_file"    default="$(find versavis)/cfg/BFS-U3-04S2C.yaml" />
+ -->
+   <!-- Determine this using rosrun pointgrey_camera_driver list_cameras.
+       If not specified, defaults to first camera found. -->
+  <arg name="cam1_serial" default="15405661" />
+  <arg name="calibrated" default="0" />
+  <arg name="node_start_delay_cam1" default="10.0" />
+
+  <!-- camera nodelet system -->
+<!--<?ignore-->
+    <node pkg="nodelet" type="nodelet" name="$(arg camera_manager)"
+          args="manager"
+          output="screen"
+          required="true" >
+       <param name="num_worker_threads" value="4" />
+    </node>
+
+  <group ns="$(arg camera_name)_$(arg camera_type)_1" >
+    <!-- nodelet manager -->
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+          args="load spinnaker_camera_driver/SpinnakerCameraNodelet /$(arg camera_manager)"
+          launch-prefix="bash -c 'sleep $(arg node_start_delay_cam1); $0 $@'" >
+
+      <!-- The following params will be included from a seperate config file soon, this is just for a quick test -->
+      <param name="frame_id" value="cam1" />
+      <param name="serial" value="$(arg cam1_serial)" />
+      <param name="acquisition_frame_rate_enable" value="false" />
+
+      <!-- Color Format related config -->
+      <param name="image_format_color_coding" value="Mono8" />
+      <!--param name="image_format_color_coding" value="BayerGB8" /-->
+
+      <!-- Exposure related config -->
+      <param name="exposure_mode" value="Timed" />
+      <param name="exposure_auto" value="Off" />
+      <param name="exposure_time" value="8333.333" /> <!-- in microseconds -->
+      <!--param name="exposure_time" value="16667" /--> <!-- in microseconds -->
+
+      <!-- Trigger related config -->
+      <param name="enable_trigger" value="On" />
+      <param name="trigger_selector" value="FrameStart" />      
+      <param name="acquisition_mode" value="Continuous" />
+      <param name="trigger_source" value="Line0" /> <!-- Pin 2 -->
+      <param name="trigger_activation_mode" value="RisingEdge" />
+      <!--param name="trigger_overlap_mode" value="ReadOut" /-->
+      <param name="trigger_overlap_mode" value="Off" />
+
+      <!-- Gain related config -->
+      <param name="auto_gain" value="Off" />
+      <param name="gain" value="1" />
+
+      <!-- Sharpening related config -->
+      <param name="sharpening_enable" value="false" />
+      <param name="auto_sharpness" value="false" />
+
+      <!-- Gamma related config -->
+      <param name="gamma_enable" value="false" />
+      <param name="gamma" value="1.0" />
+
+      <!-- White balance related config -->
+      <param name="auto_white_balance" value="Off" />
+
+      <!-- Binning related config -->
+      <param name="image_format_x_binning" value="2" />
+      <param name="image_format_y_binning" value="2" />
+
+      <!-- Brightness related config -->
+      <param name="brightness" value="0.0" />
+
+      <!-- Saturation related config-->
+      <param name="saturation_enable" value="false"/>
+
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="compile_nodelet_cam1"
+	    args="load versavis/VersaVISSynchronizerNodelet /$(arg camera_manager)"
+          output="screen"
+          required="true">
+      <param name="driver_topic" type="string" value="/$(arg camera_name)_$(arg camera_type)_1/image_numbered" />
+      <param name="versavis_topic" type="string" value="/versavis/cam1/" />
+      <param name="imu_offset_us" type="int" value="0"/>
+
+      <!-- OPTIONAL SETTINGS -->
+      <param name="publish_slow_images" type="bool" value="false"/>
+      <!--param name="publish_every_n_image" type="int" value="10"/-->
+      <!--param name="camera_info_topic" type="string" value=""/-->
+    </node>
+
+  </group>
+
+
+  <!-- Relay publish chameleon3 camera_info topic as versavis. -->
+  <!--node name="relay1" pkg="topic_tools" type="relay" args="/$(arg camera_name)_$(arg camera_type)_1/camera_info /versavis/cam1/camera_info" required="true" output="screen"/-->
+<!--?>-->
+
+  <!-- Run VersaVIS link. ttyACM0-->
+  <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
+    args="_port:=/dev/ttyACM0 _baud:=250000" respawn="true" output="screen" />
+
+  <!-- Reset VersaVIS with ros message -->
+  <node pkg="rostopic" type="rostopic" name="resetter"
+    args="pub /versavis/reset std_msgs/Bool false --once" output="screen" />
+
+  <!-- Recieve IMU message. -->
+  <node name="versavis_imu_receiver" pkg="versavis"
+      type="versavis_imu_receiver" required="true" output="screen">
+    <!-- ADIS16448AMLZ parameters -->
+    <param name="imu_accelerator_sensitivity"           value="0.000833" />
+    <!-- <param name="imu_gyro_sensitivity"                  value="0.04" /> -->
+    <param name="imu_gyro_sensitivity"                  value="0.04" />
+    <param name="imu_acceleration_covariance"           value="0.043864908" /> <!-- no idea where it is from -->
+    <param name="imu_gyro_covariance"                   value="6e-9" /> <!-- no idea where it is from -->
+    <param name="imu_sub_topic"           type="string" value="/versavis/imu_micro"/>
+  </node>
+
+  <!-- Dynamic reconfigure. -->
+  <!-- <node name="reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" /> -->
+
+</launch>
