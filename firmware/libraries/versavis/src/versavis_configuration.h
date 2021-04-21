@@ -15,9 +15,8 @@
 // Camera 0
 #define CAM0_TOPIC "/versavis/projector/"
 //#define CAM0_TOPIC ""
-//#define CAM0_RATE 10
-// #define CAM0_RATE 6 // 2p1 TPU
-#define CAM0_RATE 5  // 6 Pattern PSP
+// #define CAM0_RATE 6 // Uncomment for 2p1+TPU
+#define CAM0_RATE 5  // Uncomment for PSP+TPU
 #define CAM0_TYPE trigger_type::NON_INVERTED
 #define CAM0_TRIGGER_PIN 14
 #define CAM0_EXPOSURE_PIN 5
