@@ -44,8 +44,8 @@
       <!-- Exposure related config -->
       <param name="exposure_mode" value="Timed" />
       <param name="exposure_auto" value="Off" />
-      <param name="exposure_time" value="8333.333" /> <!-- in microseconds -->
-      <!--param name="exposure_time" value="16667" /--> <!-- in microseconds -->
+      <!--param name="exposure_time" value="8333.333" /--> <!-- in microseconds -->
+      <param name="exposure_time" value="16667" /> <!-- in microseconds -->
 
       <!-- Trigger related config -->
       <param name="enable_trigger" value="On" />
@@ -58,7 +58,7 @@
 
       <!-- Gain related config -->
       <param name="auto_gain" value="Off" />
-      <param name="gain" value="1" />
+      <param name="gain" value="0" />
 
       <!-- Sharpening related config -->
       <param name="sharpening_enable" value="false" />
