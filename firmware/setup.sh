@@ -1,7 +1,8 @@
+#!/bin/bash
+
 catkin build versavis
-shell=`echo $0 | cut -c 2-`
 devel=/`catkin config | grep ^"Devel Space:" |  cut -d'/' -f2-`
-source_path="$devel"/setup."$shell"
+source_path="$devel"/setup.bash
 
 echo $source_path
 source $source_path
