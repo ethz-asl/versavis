@@ -118,3 +118,17 @@ Troubleshooting steps:
 * Enable exposure/strobe output on your camera.
 * Check that all dip switches are set according to the [datasheet](https://drive.google.com/file/d/11QCjc5PVuMU9bAr8Kjvqz2pqVIhoMbHA/view?ts=5dc98776).
 * Check that the exposure LED on the board flashes with exposure time.
+### I receive errors on the host computer
+#### Time candidate overflow
+```bash
+[ WARN] [1619791310.834852014]: /versavis/camO/tmage_raw: Time candidates buffer overflow at 1025.
+...
+```
+Means that the synchronizer receives more timestamps than images. Double check if the camera is actually triggering with every pulse it receives. A typical problem is when the exposure time is higher than the measurement period.
+
+#### Image candidate overflow
+```bash
+[ WARN] [1619791310.834852014]: /versavis/camO/tmage_raw: Image candidates buffer overflow at 1025.
+...
+```
+Means that the synchronizer receives more iamges than timestamps. Double check if the camera is actually triggering and not free running.
