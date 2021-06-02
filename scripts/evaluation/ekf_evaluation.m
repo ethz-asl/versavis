@@ -7,15 +7,15 @@ clear
 %bag = rosbag('/home/spadmin/datasets/arduino_vi_sync/ekf_tests/2019-09-16-15-54-23.bag');
 %bag = rosbag('/home/spadmin/datasets/arduino_vi_sync/ekf_tests/2019-09-16-16-01-08.bag');
 % bag = rosbag('/home/spadmin/datasets/arduino_vi_sync/ekf_tests/2019-09-16-16-24-44.bag');
-bag = rosbag('/home/spadmin/datasets/arduino_vi_sync/ekf_tests/2019-09-18-12-49-57.bag');
+bag = rosbag('~/Downloads/1Hz_retuned.bag');
 
-residual = readTopic(bag, '/arduino_vi_sync/ekf/residual');
-offset = readTopic(bag, '/arduino_vi_sync/ekf/offset');
-skew = readTopic(bag, '/arduino_vi_sync/ekf/skew');
-inno_offset = readTopic(bag, '/arduino_vi_sync/ekf/inno_offset');
-inno_skew = readTopic(bag, '/arduino_vi_sync/ekf/inno_skew');
+residual = readTopic(bag, '/versavis/ekf/residual');
+offset = readTopic(bag, '/versavis/ekf/offset');
+skew = readTopic(bag, '/versavis/ekf/skew');
+inno_offset = readTopic(bag, '/versavis/ekf/inno_offset');
+inno_skew = readTopic(bag, '/versavis/ekf/inno_skew');
 
-figure
+whiteFigure()
 yyaxis left
 plot(offset)
 ylabel('Offset [s]')
@@ -26,7 +26,7 @@ xlim([0,1200])
 xlabel('Time [s]')
 
 
-figure
+whiteFigure()
 subplot(3,1,1)
 plot(residual*1000)
 ylabel('Residual [ms]')
