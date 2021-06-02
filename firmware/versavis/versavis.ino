@@ -38,15 +38,15 @@ ros::Subscriber<std_msgs::UInt8> pwm_sub("/versavis/illumination_pwm", &pwmCb);
 #endif
 
 std_msgs::Float64 residual_msg;
-ros::Publisher residual_pub("/arduino_vi_sync/ekf/residual", &residual_msg);
+ros::Publisher residual_pub("/versavis/ekf/residual", &residual_msg);
 std_msgs::Float64 offset_msg;
-ros::Publisher offset_pub("/arduino_vi_sync/ekf/offset", &offset_msg);
+ros::Publisher offset_pub("/versavis/ekf/offset", &offset_msg);
 std_msgs::Float64 skew_msg;
-ros::Publisher skew_pub("/arduino_vi_sync/ekf/skew", &skew_msg);
+ros::Publisher skew_pub("/versavis/ekf/skew", &skew_msg);
 std_msgs::Float64 inno_offset_msg;
-ros::Publisher inno_offset_pub("/arduino_vi_sync/ekf/inno_offset", &inno_offset_msg);
+ros::Publisher inno_offset_pub("/versavis/ekf/inno_offset", &inno_offset_msg);
 std_msgs::Float64 inno_skew_msg;
-ros::Publisher inno_skew_pub("/arduino_vi_sync/ekf/inno_skew", &inno_skew_msg);
+ros::Publisher inno_skew_pub("/versavis/ekf/inno_skew", &inno_skew_msg);
 
 /* ----- Timers ----- */
 // In the current setup: TC5 -> IMU, TCC0 -> cam0, TCC1 -> cam1, TC3 -> cam2
