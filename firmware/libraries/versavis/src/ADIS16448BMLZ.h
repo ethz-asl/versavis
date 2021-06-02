@@ -124,10 +124,10 @@ public:
                  const unsigned int &POLY);
 
   // Update data internally with recursion.
-  void updateDataRecursive(const unsigned int depth);
+  bool updateDataIterative();
 
   // Update data withoput recursion.
-  void updateData();
+  bool updateData();
 
 private:
   // Variables to store hardware pin assignments.

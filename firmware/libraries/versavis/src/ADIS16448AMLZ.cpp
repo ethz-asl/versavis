@@ -386,20 +386,36 @@ float ADIS16448AMLZ::magnetometerScale(int16_t sensorData) {
 // Method to update the sensor data without any validity checks (may result in
 // spikes).
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16448AMLZ::updateData() { sensor_data_ = sensorReadWoCRC(); }
+bool ADIS16448AMLZ::updateData() {
+  sensor_data_ = sensorReadWoCRC();
+  return sensor_data_ != nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Method to update the internally stored sensor data recusivelly by checking
 // the validity.
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void ADIS16448AMLZ::updateDataRecursive(unsigned int depth) {
-  sensor_data_ = sensorReadWoCRC();
-  // Assuming that 1) temperature changes much slower than IMU sampling rate, 2)
-  // all other measurements are correct if TEMP_OUT is correct. It may be
-  // necessary to filter outliers out by using moving average filter before
-  // publishing IMU topic (i.e., versavis_imu_receiver.cpp)
-  if (sensor_data_[11] != regRead(TEMP_OUT) &&
-      depth < max_recursive_update_depth_) {
-    updateDataRecursive(depth + 1);
+bool ADIS16448AMLZ::updateDataIterative() {
+  uint64_t tic = micros();
+  bool success = false;
+  for (size_t depth = 0; depth < kMaxRecursiveUpdateDepth; ++depth) {
+    Sensor::setTimestampNow();
+    sensor_data_ = sensorReadWoCRC();
+    // Assuming that 1) temperature changes much slower than IMU sampling rate,
+    // 2) all other measurements are correct if TEMP_OUT is correct. It may be
+    // necessary to filter outliers out by using moving average filter before
+    // publishing IMU topic (i.e., versavis_imu_receiver.cpp)
+    if (sensor_data_ == nullptr || sensor_data_[11] != regRead(TEMP_OUT)) {
+      if (micros() - tic > kImuSyncTimeoutUs) {
+        return false;
+      }
+      DEBUG_PRINTLN(
+          topic_ +
+          " (ADIS16448AMLZ.cpp): Failed IMU update detected, trying again " +
+          (String)(kMaxRecursiveUpdateDepth - depth) + " times.");
+    } else {
+      return true;
+    }
   }
+  return false;
 }
