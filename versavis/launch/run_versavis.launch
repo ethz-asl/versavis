@@ -118,6 +118,11 @@
       <param name="driver_topic" type="string" value="/$(arg camera_name)_$(arg camera_type)_1/image_numbered" />
       <param name="versavis_topic" type="string" value="/versavis/cam1/" />
       <param name="imu_offset_us" type="int" value="0"/>
+
+      <!-- OPTIONAL SETTINGS -->
+      <param name="publish_slow_images" type="bool" value="false"/>
+      <param name="publish_every_n_image" type="int" value="10"/>
+      <param name="camera_info_topic" type="string" value=""/>
     </node>
   </group>
 
