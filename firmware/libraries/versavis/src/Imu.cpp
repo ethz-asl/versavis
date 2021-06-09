@@ -51,6 +51,7 @@ void Imu::publish() {
       imu_msg_.ax = sensor_data_[ImuReading::AX];
       imu_msg_.ay = sensor_data_[ImuReading::AY];
       imu_msg_.az = sensor_data_[ImuReading::AZ];
+      imu_msg_.baro = sensor_data_[ImuReading::BARO];
 #ifndef DEBUG
       publisher_.publish(&imu_msg_);
 #endif

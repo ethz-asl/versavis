@@ -18,6 +18,7 @@
 #include <ros/ros.h>
 #include <ros/subscriber.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/FluidPressure.h>
 
 #include <versavis/ImuMicro.h>
 
@@ -30,6 +31,7 @@ public:
     imu_sub_ = node_handle_.subscribe(imu_sub_topic_, 100u,
                                       &VersaVISImuReciever::imuCallback, this);
     imu_pub_ = node_handle_.advertise<sensor_msgs::Imu>(imu_pub_topic_, 100u);
+    baro_pub_ = node_handle_.advertise<sensor_msgs::FluidPressure>(baro_pub_topic_, 100u);
     last_msg_time_ = ros::Time(0);
   }
 
@@ -46,6 +48,7 @@ public:
     }
     last_msg_time_ = imu_micro_msg.time.data;
     sensor_msgs::Imu imu_msg;
+    sensor_msgs::FluidPressure baro_msg;
 
     imu_msg.header.stamp = imu_micro_msg.time.data;
     imu_msg.header.frame_id = "imu";
@@ -90,6 +93,12 @@ public:
     imu_msg.linear_acceleration_covariance[8] = imu_acceleration_covariance_;
 
     imu_pub_.publish(imu_msg);
+
+    baro_msg.header.stamp = imu_micro_msg.time.data;
+    baro_msg.header.frame_id = "barometer";
+    baro_msg.fluid_pressure = pressureScale(imu_micro_msg.baro);
+    std::cout << "Barometer reading: " << imu_micro_msg.baro << std::endl; 
+    baro_pub_.publish(baro_msg);
   }
 
   void readParameters() {
@@ -98,6 +107,8 @@ public:
                        std::string("/versavis/imu_micro"));
     node_handle_.param("imu_pub_topic", imu_pub_topic_,
                        std::string("/versavis/imu"));
+    node_handle_.param("baro_pub_topic", baro_pub_topic_,
+                       std::string("/versavis/baro"));
     node_handle_.param("imu_accelerator_sensitivity",
                        imu_accelerator_sensitivity_, 0.00025);
     node_handle_.param("imu_gyro_sensitivity", imu_gyro_sensitivity_, 0.05);
@@ -110,14 +121,20 @@ private:
   ros::NodeHandle node_handle_;
   ros::Subscriber imu_sub_;
   ros::Publisher imu_pub_;
+  ros::Publisher baro_pub_;
   // ros::Subscriber img_time_sub_;
   std::string imu_sub_topic_;
   std::string imu_pub_topic_;
+  std::string baro_pub_topic_;
   ros::Time last_msg_time_;
   double imu_accelerator_sensitivity_;
   double imu_gyro_sensitivity_;
   double imu_acceleration_covariance_;
   double imu_gyro_covariance_;
+
+  float pressureScale(const int16_t &sensor_data){
+    return sensor_data*1.0; // Multiply by barometer sensitivity (0.02 mBar/LSB)
+  }
 
   // Converts accelerometer data output from the regRead() function and
   // returns

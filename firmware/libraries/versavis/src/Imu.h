@@ -26,6 +26,7 @@ enum ImuReading {
   AX = 4,
   AY = 5,
   AZ = 6,
+  BARO = 10,
   // The reminder of the entries is not identical for the different ADIS IMUs.
   // Check burst read function of the specific IMU.
 };
