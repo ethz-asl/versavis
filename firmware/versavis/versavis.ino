@@ -1,4 +1,4 @@
-// Import all settings for the chosen sensor configuration.
+  // Import all settings for the chosen sensor configuration.
 #include "versavis_configuration.h"
 
 #include <math.h>

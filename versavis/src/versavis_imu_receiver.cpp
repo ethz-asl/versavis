@@ -133,7 +133,7 @@ private:
   double imu_gyro_covariance_;
 
   float pressureScale(const int16_t &sensor_data){
-    return sensor_data*1.0; // Multiply by barometer sensitivity (0.02 mBar/LSB)
+    return sensor_data*0.02; // Multiply by barometer sensitivity (0.02 mBar/LSB)
   }
 
   // Converts accelerometer data output from the regRead() function and
