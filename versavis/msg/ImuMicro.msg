@@ -13,5 +13,5 @@ int16 az
 int16 gx
 int16 gy
 int16 gz
-uint16 baro
+int16 baro
 

@@ -97,7 +97,6 @@ public:
     baro_msg.header.stamp = imu_micro_msg.time.data;
     baro_msg.header.frame_id = "barometer";
     baro_msg.fluid_pressure = pressureScale(imu_micro_msg.baro);
-    std::cout << "Barometer reading: " << imu_micro_msg.baro << std::endl; 
     baro_pub_.publish(baro_msg);
   }
 
@@ -133,7 +132,7 @@ private:
   double imu_gyro_covariance_;
 
   float pressureScale(const int16_t &sensor_data){
-    return sensor_data*0.02; // Multiply by barometer sensitivity (0.02 mBar/LSB)
+    return 0.02*(uint16_t)sensor_data; // Convert signed int to unsigned. Multiply by barometer sensitivity (0.02 mBar/LSB)
   }
 
   // Converts accelerometer data output from the regRead() function and
