@@ -20,7 +20,7 @@ Camera::Camera(ros::NodeHandle *nh, const String &topic, const int rate_hz,
                const uint8_t trigger_pin /*= 0 */,
                const uint8_t exposure_pin /*= 0 */,
                const bool exposure_compensation /*= true*/)
-    : Sensor(nh, topic, rate_hz, timer, image_time_msg_, type),
+    : TimedSensor(nh, topic, rate_hz, timer, image_time_msg_, type),
       trigger_pin_(trigger_pin), exposure_pin_(exposure_pin),
       exposure_compensation_(exposure_compensation), is_configured_(true),
       compensating_(false), exposing_(false), image_number_(0),
@@ -81,7 +81,7 @@ void Camera::begin() {
   max_exposure_time_us_ = 0.99 * 1e6 / rate_hz_;
 
   // Setup timer to periodically trigger the camera.
-  Sensor::setupTimer();
+  TimedSensor::setupTimer();
 }
 
 void Camera::setupPublisher() {

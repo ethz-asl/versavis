@@ -15,13 +15,13 @@
 #define Camera_h
 
 #include "Arduino.h"
-#include "Sensor.h"
+#include "TimedSensor.h"
 #include <ros.h>
 #include <std_msgs/Bool.h>
 #include <versavis/TimeNumbered.h>
 
 // timers Class Definition
-class Camera : public Sensor {
+class Camera : public TimedSensor {
 public:
   Camera(ros::NodeHandle *nh, const String &topic, const int rate_hz,
          Timer &timer, const trigger_type &type, const uint8_t trigger_pin = 0,
