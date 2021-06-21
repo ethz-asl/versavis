@@ -14,7 +14,7 @@
 #define Imu_h
 
 #include "Arduino.h"
-#include "Sensor.h"
+#include "TimedSensor.h"
 #include <ros.h>
 #include <versavis/ImuMicro.h>
 
@@ -30,7 +30,7 @@ enum ImuReading {
   // Check burst read function of the specific IMU.
 };
 
-class Imu : public Sensor {
+class Imu : public TimedSensor {
 public:
   Imu(ros::NodeHandle *nh, const String &topic, const int rate_hz,
       Timer &timer);

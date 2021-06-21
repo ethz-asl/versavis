@@ -40,6 +40,14 @@
 #define IMU_TOPIC "/versavis/imu_micro"
 #define IMU_RATE 200
 
+/* ----- ExternalEvent -----*/
+// #define EXT_EVENT
+#ifdef EXT_EVENT
+#define EXT_EVENT_TOPIC "/versavis/ext_event"
+#define EXT_EVENT_PIN 2
+#define EXT_EVENT_LOGIC RISING
+#endif
+
 /* ----- Additional triggers ----- */
 // Define whether additional test outputs should be used.
 // #define ADD_TRIGGERS

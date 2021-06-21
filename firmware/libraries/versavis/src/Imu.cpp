@@ -5,8 +5,9 @@
 
 Imu::Imu(ros::NodeHandle *nh, const String &topic, const int rate_hz,
          Timer &timer)
-    : Sensor(nh, topic, rate_hz, timer, imu_msg_), kMaxRecursiveUpdateDepth(5u),
+    : TimedSensor(nh, topic, rate_hz, timer, imu_msg_), kMaxRecursiveUpdateDepth(5u),
       kImuSyncTimeoutUs(4000) {}
+
 
 void Imu::triggerMeasurement() {
   // Check whether an overflow caused the interrupt.
@@ -70,5 +71,5 @@ void Imu::setupPublisher() {
 
 void Imu::begin() {
   DEBUG_PRINTLN((topic_ + " (Imu.cpp): Begin.").c_str());
-  Sensor::setupTimer();
+  TimedSensor::setupTimer();
 }
