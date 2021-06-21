@@ -3,6 +3,8 @@
 
 VersaVIS provides a complete, open-source hardware, firmware and software bundle to perform time synchronization of multiple cameras with an IMU featuring exposure compensation, host clock translation and independent and stereo camera triggering.
 
+## News
+* VersaVIS runs on Ubuntu 20.04 focal fossa / ROS Noetic now, look at this [issue](https://github.com/ethz-asl/versavis/issues/21#issuecomment-853007617).
 
 ## Supported camera drivers
 * [Basler (not open-source)](https://github.com/ethz-asl/ros_basler_camera/tree/devel/versavis) tested with acA1920-155uc
