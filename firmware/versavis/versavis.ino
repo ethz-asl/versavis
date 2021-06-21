@@ -17,6 +17,10 @@
 #include <ADIS16460.h>
 #elif defined(USE_VN100)
 #include <VN100.h>
+#elif defined(USE_BMI055)
+#include <BMI055.h>
+#elif defined(USE_BMI088)
+#include <BMI088.h>
 #endif
 #include <Camera.h>
 #include <Timer.h>
@@ -58,6 +62,10 @@ ADIS16448BMLZ imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
 ADIS16460 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 10, 2, 9);
 #elif defined(USE_VN100)
 VN100 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu);
+#elif defined(USE_BMI055)
+BMI055 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 0x18, 0x68);
+#elif defined(USE_BMI088)
+BMI088 imu(&nh, IMU_TOPIC, IMU_RATE, timer_imu, 0x18, 0x68);
 #endif
 
 /* ----- Cameras ----- */
