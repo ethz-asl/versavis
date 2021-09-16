@@ -17,7 +17,7 @@ VersaVISSynchronizer::VersaVISSynchronizer(const ros::NodeHandle &nh,
                                            const ros::NodeHandle &nh_private)
     : nh_(nh), nh_private_(nh_private), image_transport_(nh),
       received_first_camera_info_(false), kMaxImageCandidateLength(10),
-      kMinSuccessfullConsecutiveMatches(4), kMaxImageDelayThreshold(0.1),
+      kMinSuccessfullConsecutiveMatches(4), kMaxImageDelayThreshold(0.5),
       slow_publisher_image_counter_(0), init_number_(0), initialized_(false),
       publish_slow_images_(false), publish_every_n_image_(10),
       forward_camera_info_(false) {
@@ -166,8 +166,7 @@ void VersaVISSynchronizer::imageCallback(
     // time and the same offset.
     // Note: The image_time message should arrive prior to the image.
     if (ros::Time::now().toSec() - init_timestamp_.toSec() <
-            kMaxImageDelayThreshold &&
-        offset == offset_) {
+            kMaxImageDelayThreshold) {
       ++init_number_;
       if (init_number_ >= kMinSuccessfullConsecutiveMatches) {
         ROS_INFO("%s: Initialized with %ld offset.",
