@@ -1,9 +1,12 @@
 # VersaVIS -- An Open Versatile Multi-Camera Visual-Inertial Sensor Suite
 [![Build Test](https://github.com/ethz-asl/versavis/actions/workflows/build_test.yml/badge.svg)](https://github.com/ethz-asl/versavis/actions/workflows/build_test.yml)
 
+<a href="https://youtu.be/bsvSZJq76Mc"> <img src="https://user-images.githubusercontent.com/17647950/133631034-f633df6b-7ce7-4851-8cd3-f67c0bbec67a.jpg" alt="https://youtu.be/bsvSZJq76Mc" width="600"> </a>
+
 VersaVIS provides a complete, open-source hardware, firmware and software bundle to perform time synchronization of multiple cameras with an IMU featuring exposure compensation, host clock translation and independent and stereo camera triggering.
 
 ## News
+* Enjoy our new [trailer video](https://youtu.be/bsvSZJq76Mc) explaining the main conecpt behind VersaVIS.
 * VersaVIS runs on Ubuntu 20.04 focal fossa / ROS Noetic now, look at this [issue](https://github.com/ethz-asl/versavis/issues/21#issuecomment-853007617).
 
 ## Supported camera drivers
@@ -11,7 +14,6 @@ VersaVIS provides a complete, open-source hardware, firmware and software bundle
 * [MatrixVision](https://github.com/ethz-asl/bluefox2/tree/devel/versavis) tested with Bluefox 2 MLC200WG, needs adaption for new format
 * [PointGrey/Flir](https://github.com/ethz-asl/flir_camera_driver/tree/devel/versavis) tested with Chameleon 3, Blackfly S
 * [CamBoard](https://github.com/ethz-asl/pico_flexx_driver/tree/devel/versavis) tested with CamBoard pico monstar
-
 
 ## Citing
 
