@@ -14,24 +14,21 @@
 /* ----- Camera configuration ----*/
 // Camera 0
 #define CAM0_TOPIC "/versavis/projector/"
-//#define CAM0_TOPIC ""
-// #define CAM0_RATE 6 // Uncomment for 2p1+TPU
-#define CAM0_RATE 5  // Uncomment for PSP+TPU
+#define CAM0_RATE 5
 #define CAM0_TYPE trigger_type::NON_INVERTED
 #define CAM0_TRIGGER_PIN 14
 #define CAM0_EXPOSURE_PIN 5
 
 // Camera 1
 #define CAM1_TOPIC "/versavis/cam1/"
-//#define CAM1_RATE 60
 #define CAM1_RATE 30
 #define CAM1_TYPE trigger_type::NON_INVERTED
 #define CAM1_TRIGGER_PIN 15
 #define CAM1_EXPOSURE_PIN 6
 
 // Camera 2
-#define CAM2_TOPIC ""
-#define CAM2_RATE 5
+#define CAM2_TOPIC "/versavis/cam2/"
+#define CAM2_RATE 30
 #define CAM2_TYPE trigger_type::NON_INVERTED
 #define CAM2_TRIGGER_PIN 16
 #define CAM2_EXPOSURE_PIN 7
